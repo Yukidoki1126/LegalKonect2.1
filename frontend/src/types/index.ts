@@ -100,16 +100,14 @@ export interface Recommendation {
 }
 
 export interface CalendarEvent {
-  id: number;
+  id: string;
   title: string;
   start: string;
   end: string;
   status: string;
   color: string;
   extendedProps: {
-    client: Client;
-    specialization: Specialization | null;
-    notes: string | null;
+    appointment: Appointment;
   };
 }
 

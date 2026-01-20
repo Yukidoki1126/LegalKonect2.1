@@ -9,8 +9,11 @@ use Illuminate\Support\Collection;
 class RecommendationService
 {
     private const WEIGHT_DISTANCE = 0.40;
+
     private const WEIGHT_RATING = 0.35;
+
     private const WEIGHT_SPECIALIZATION = 0.25;
+
     private const MAX_DISTANCE_KM = 50;
 
     private GeoService $geoService;
@@ -107,6 +110,7 @@ class RecommendationService
         }
 
         $matches = array_intersect($firmSpecs, $clientSpecs);
+
         return count($matches) > 0 ? 1 : 0;
     }
 }

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
-import { Client, CalendarEvent } from '../../types';
+import { Client, CalendarEvent, Appointment } from '../../types';
 import LawFirmLayout from '../../components/lawfirm/LawFirmLayout';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -9,6 +9,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import './LawFirmDashboard.css';
 
 export default function Calendar() {
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [clients, setClients] = useState<Client[]>([]);
     const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
     const [loading, setLoading] = useState(true);
@@ -17,11 +18,7 @@ export default function Calendar() {
     const [appointmentDate, setAppointmentDate] = useState('');
     const [appointmentNotes, setAppointmentNotes] = useState('');
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
             const [appointmentsData, clientsData] = await Promise.all([
@@ -31,13 +28,13 @@ export default function Calendar() {
             setAppointments(appointmentsData);
             setClients(clientsData);
 
-            const events = appointmentsData.map((apt) => ({
+            const events: CalendarEvent[] = appointmentsData.map((apt: Appointment) => ({
                 id: apt.id.toString(),
                 title: apt.client?.user?.name || 'Client',
                 start: apt.scheduled_at,
                 end: new Date(new Date(apt.scheduled_at).getTime() + (apt.duration_minutes || 60) * 60000).toISOString(),
-                backgroundColor: getStatusColor(apt.status),
-                borderColor: getStatusColor(apt.status),
+                status: apt.status,
+                color: getStatusColor(apt.status),
                 extendedProps: { appointment: apt },
             }));
             setCalendarEvents(events);
@@ -46,7 +43,11 @@ export default function Calendar() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -84,7 +85,7 @@ export default function Calendar() {
                 <div className="page-header">
                     <div className="header-with-action">
                         <div>
-                            <h2>📅 Appointment Calendar</h2>
+                            <h2>📅 Appointment Calendar ({appointments.length})</h2>
                             <p>Manage and schedule your client meetings</p>
                         </div>
                         <button

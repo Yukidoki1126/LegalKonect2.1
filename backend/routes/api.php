@@ -4,9 +4,8 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\ClientController;
 use App\Http\Controllers\LawFirm\LawFirmController;
-use App\Models\Specialization;
 use App\Models\LawFirm;
-use Illuminate\Http\Request;
+use App\Models\Specialization;
 use Illuminate\Support\Facades\Route;
 
 /*

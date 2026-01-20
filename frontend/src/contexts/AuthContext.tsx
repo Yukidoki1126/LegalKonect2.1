@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 try {
                     const userData = await api.getUser();
                     setUser(userData);
-                } catch (error) {
+                } catch {
                     localStorage.removeItem('token');
                     setToken(null);
                 }
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = async () => {
         try {
             await api.logout();
-        } catch (error) {
+        } catch {
             // Ignore errors on logout
         }
         localStorage.removeItem('token');

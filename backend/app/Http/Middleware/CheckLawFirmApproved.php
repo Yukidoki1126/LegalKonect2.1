@@ -18,7 +18,7 @@ class CheckLawFirmApproved
         if ($user && $user->isLawFirm()) {
             $lawFirm = $user->lawFirm;
 
-            if (!$lawFirm || !$lawFirm->isApproved()) {
+            if (! $lawFirm || ! $lawFirm->isApproved()) {
                 return response()->json([
                     'message' => 'Your law firm is not yet approved. Please wait for admin verification.',
                     'verification_status' => $lawFirm ? $lawFirm->verification_status : 'unknown',

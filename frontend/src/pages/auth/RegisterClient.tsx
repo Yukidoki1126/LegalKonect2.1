@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { Specialization } from '../../types';
@@ -21,18 +21,18 @@ export default function RegisterClient() {
     const navigate = useNavigate();
     const { setUser } = useAuth();
 
-    useEffect(() => {
-        loadSpecializations();
-    }, []);
-
-    const loadSpecializations = async () => {
+    const loadSpecializations = useCallback(async () => {
         try {
             const data = await api.getSpecializations();
             setSpecializations(data);
-        } catch (err) {
+        } catch {
             console.error('Failed to load specializations');
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadSpecializations();
+    }, [loadSpecializations]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -57,8 +57,9 @@ export default function RegisterClient() {
             localStorage.setItem('token', response.token);
             setUser(response.user);
             navigate('/client/dashboard');
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Registration failed');
+        } catch (err: unknown) {
+            const error = err as { response?: { data?: { message?: string } } };
+            setError(error.response?.data?.message || 'Registration failed');
         } finally {
             setLoading(false);
         }

@@ -140,18 +140,19 @@ class AnalyticsService
                     $firm->longitude
                 );
 
-                if ($distance <= 5)
+                if ($distance <= 5) {
                     $ranges['0-5']++;
-                elseif ($distance <= 10)
+                } elseif ($distance <= 10) {
                     $ranges['5-10']++;
-                elseif ($distance <= 15)
+                } elseif ($distance <= 15) {
                     $ranges['10-15']++;
-                elseif ($distance <= 20)
+                } elseif ($distance <= 20) {
                     $ranges['15-20']++;
-                elseif ($distance <= 30)
+                } elseif ($distance <= 30) {
                     $ranges['20-30']++;
-                else
+                } else {
                     $ranges['30+']++;
+                }
             }
         }
 

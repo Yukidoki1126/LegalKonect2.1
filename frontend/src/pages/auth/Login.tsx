@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import api from '../../services/api';
-import { Specialization } from '../../types';
 import './Auth.css';
 
 export default function Login() {
@@ -13,13 +11,7 @@ export default function Login() {
     const { login, isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (isAuthenticated && user) {
-            redirectByRole(user.role);
-        }
-    }, [isAuthenticated, user]);
-
-    const redirectByRole = (role: string) => {
+    const redirectByRole = useCallback((role: string) => {
         switch (role) {
             case 'client':
                 navigate('/client/dashboard');
@@ -33,7 +25,13 @@ export default function Login() {
             default:
                 navigate('/');
         }
-    };
+    }, [navigate]);
+
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            redirectByRole(user.role);
+        }
+    }, [isAuthenticated, user, redirectByRole]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,8 +40,9 @@ export default function Login() {
 
         try {
             await login(email, password);
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to login');
+        } catch (err: unknown) {
+            const error = err as { response?: { data?: { message?: string } } };
+            setError(error.response?.data?.message || 'Failed to login');
         } finally {
             setLoading(false);
         }

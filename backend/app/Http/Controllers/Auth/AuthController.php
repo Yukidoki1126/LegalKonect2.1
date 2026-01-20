@@ -46,7 +46,7 @@ class AuthController extends Controller
             'longitude' => $validated['longitude'] ?? null,
         ]);
 
-        if (!empty($validated['specialization_ids'])) {
+        if (! empty($validated['specialization_ids'])) {
             $client->specializations()->sync($validated['specialization_ids']);
         }
 
@@ -100,7 +100,7 @@ class AuthController extends Controller
             'verification_status' => 'pending',
         ]);
 
-        if (!empty($validated['specialization_ids'])) {
+        if (! empty($validated['specialization_ids'])) {
             $lawFirm->specializations()->sync($validated['specialization_ids']);
         }
 
@@ -123,7 +123,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);

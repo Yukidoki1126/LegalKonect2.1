@@ -9,10 +9,10 @@ class GeoService
     /**
      * Calculate distance between two coordinates using Haversine formula
      *
-     * @param float $lat1 Latitude of point 1
-     * @param float $lon1 Longitude of point 1
-     * @param float $lat2 Latitude of point 2
-     * @param float $lon2 Longitude of point 2
+     * @param  float  $lat1  Latitude of point 1
+     * @param  float  $lon1  Longitude of point 1
+     * @param  float  $lat2  Latitude of point 2
+     * @param  float  $lon2  Longitude of point 2
      * @return float Distance in kilometers
      */
     public function calculateDistance(
