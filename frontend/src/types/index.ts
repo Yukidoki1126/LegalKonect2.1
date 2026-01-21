@@ -69,6 +69,7 @@ export interface Appointment {
   client?: Client;
   law_firm?: LawFirm;
   specialization?: Specialization;
+  rating?: Rating;
 }
 
 export interface Rating {
@@ -106,6 +107,7 @@ export interface CalendarEvent {
   end: string;
   status: string;
   color: string;
+  textColor?: string;
   extendedProps: {
     appointment: Appointment;
   };

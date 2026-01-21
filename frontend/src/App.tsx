@@ -9,7 +9,10 @@ import RegisterLawFirm from './pages/auth/RegisterLawFirm';
 
 // Dashboard Pages
 import ClientDashboard from './pages/client/Dashboard';
+import ClientSettings from './pages/client/Settings';
+import ClientAppointments from './pages/client/Appointments';
 import LawFirmDashboard from './pages/lawfirm/Dashboard';
+import LawFirmAppointments from './pages/lawfirm/Appointments';
 import LawFirmCalendar from './pages/lawfirm/Calendar';
 import LawFirmReviews from './pages/lawfirm/Reviews';
 import LawFirmSettings from './pages/lawfirm/Settings';
@@ -115,6 +118,22 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/client/settings"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <ClientSettings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/appointments"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <ClientAppointments />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Law Firm Routes */}
       <Route
@@ -122,6 +141,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['law_firm']}>
             <LawFirmDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/law-firm/appointments"
+        element={
+          <ProtectedRoute allowedRoles={['law_firm']}>
+            <LawFirmAppointments />
           </ProtectedRoute>
         }
       />

@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { LayoutDashboard, FileCheck, TrendingUp, LogOut, Scale } from '../icons/Icons';
 import './AdminLayout.css';
 
 interface AdminLayoutProps {
@@ -20,21 +21,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="admin-layout">
             <aside className="admin-sidebar">
                 <div className="sidebar-header">
-                    <span className="logo-icon">⚖️</span>
+                    <Scale className="logo-icon" size={24} />
                     <span className="logo-text">LegalKonect</span>
                 </div>
                 
                 <nav className="sidebar-nav">
                     <NavLink to="/admin/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <span className="icon">📊</span>
+                        <LayoutDashboard className="icon" size={20} />
                         <span className="label">Dashboard</span>
                     </NavLink>
                     <NavLink to="/admin/verification" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <span className="icon">📜</span>
+                        <FileCheck className="icon" size={20} />
                         <span className="label">Verification</span>
                     </NavLink>
                     <NavLink to="/admin/analytics" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <span className="icon">📈</span>
+                        <TrendingUp className="icon" size={20} />
                         <span className="label">Analytics</span>
                     </NavLink>
                 </nav>
@@ -48,7 +49,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         </div>
                     </div>
                     <button onClick={handleLogout} className="btn-logout">
-                        <span className="icon">🚪</span>
+                        <LogOut className="icon" size={20} />
                         <span className="label">Logout</span>
                     </button>
                 </div>

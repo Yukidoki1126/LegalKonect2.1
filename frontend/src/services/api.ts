@@ -101,6 +101,8 @@ class ApiService {
     }
 
     async updateClientProfile(data: {
+        name?: string;
+        email?: string;
         phone?: string;
         address?: string;
         specialization_ids?: number[];
@@ -125,6 +127,16 @@ class ApiService {
 
     async getClientAppointments(): Promise<Appointment[]> {
         const response = await this.api.get('/client/appointments');
+        return response.data;
+    }
+
+    async bookAppointment(data: {
+        law_firm_id: number;
+        specialization_id?: number;
+        scheduled_at: string;
+        notes?: string;
+    }): Promise<{ message: string; appointment: Appointment }> {
+        const response = await this.api.post('/client/appointments', data);
         return response.data;
     }
 
@@ -269,6 +281,7 @@ class ApiService {
         descriptive: {
             most_performing: { id: number; firm_name: string; completed_appointments: number } | null;
             most_rated: { id: number; firm_name: string; average_rating: number; rating_count: number } | null;
+            insights: string[];
         };
     }> {
         const response = await this.api.get('/admin/analytics/appointments');

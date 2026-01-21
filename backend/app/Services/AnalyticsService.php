@@ -59,7 +59,7 @@ class AnalyticsService
     {
         return Appointment::query()
             ->select(
-                DB::raw('DATE_FORMAT(scheduled_at, "%Y-%m") as month'),
+                DB::raw("strftime('%Y-%m', scheduled_at) as month"),
                 DB::raw('COUNT(*) as total'),
                 DB::raw('SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed'),
                 DB::raw('SUM(CASE WHEN status = "cancelled" THEN 1 ELSE 0 END) as cancelled')
@@ -165,14 +165,14 @@ class AnalyticsService
     public function getRegistrationTrends(int $months = 12): array
     {
         $clientTrends = Client::query()
-            ->select(DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'), DB::raw('COUNT(*) as count'))
+            ->select(DB::raw("strftime('%Y-%m', created_at) as month"), DB::raw('COUNT(*) as count'))
             ->where('created_at', '>=', now()->subMonths($months))
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('count', 'month');
 
         $firmTrends = LawFirm::query()
-            ->select(DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'), DB::raw('COUNT(*) as count'))
+            ->select(DB::raw("strftime('%Y-%m', created_at) as month"), DB::raw('COUNT(*) as count'))
             ->where('created_at', '>=', now()->subMonths($months))
             ->groupBy('month')
             ->orderBy('month')
@@ -191,36 +191,58 @@ class AnalyticsService
     {
         // Most performing (most completed appointments)
         $mostPerforming = LawFirm::query()
-            ->select('law_firms.*', DB::raw('COUNT(appointments.id) as completed_count'))
+            ->select('law_firms.id', 'law_firms.firm_name', DB::raw('COUNT(appointments.id) as completed_count'))
             ->join('appointments', 'law_firms.id', '=', 'appointments.law_firm_id')
             ->where('appointments.status', 'completed')
-            ->groupBy('law_firms.id')
+            ->groupBy('law_firms.id', 'law_firms.firm_name')
             ->orderByDesc('completed_count')
             ->first();
 
         // Most rated (highest average rating with at least 1 rating)
-        // We'll also consider the count of ratings to break ties or ensure significance
         $mostRated = LawFirm::query()
-            ->select('law_firms.*', DB::raw('AVG(ratings.rating) as average_rating'), DB::raw('COUNT(ratings.id) as rating_count'))
+            ->select('law_firms.id', 'law_firms.firm_name', DB::raw('AVG(ratings.rating) as average_rating'), DB::raw('COUNT(ratings.id) as rating_count'))
             ->join('ratings', 'law_firms.id', '=', 'ratings.law_firm_id')
-            ->groupBy('law_firms.id')
+            ->groupBy('law_firms.id', 'law_firms.firm_name')
             ->having('rating_count', '>', 0)
             ->orderByDesc('average_rating')
             ->orderByDesc('rating_count')
             ->first();
 
+        // Top specialization - direct query from appointments
+        $topSpec = DB::table('appointments')
+            ->join('specializations', 'appointments.specialization_id', '=', 'specializations.id')
+            ->select('specializations.name', DB::raw('COUNT(*) as total'))
+            ->groupBy('specializations.id', 'specializations.name')
+            ->orderByDesc('total')
+            ->first();
+
+        $insights = [];
+
+        if ($mostPerforming) {
+            $insights[] = "The law firm \"{$mostPerforming->firm_name}\" is currently the most active on the platform, having successfully completed {$mostPerforming->completed_count} legal consultations. This high volume of completed cases demonstrates their strong operational capacity and commitment to client service.";
+        }
+
+        if ($mostRated) {
+            $insights[] = "With a stellar average rating of " . round($mostRated->average_rating, 1) . " stars from {$mostRated->rating_count} reviews, \"{$mostRated->firm_name}\" stands out as the most trusted firm by clients. Their consistent positive feedback suggests a high level of expertise and excellent client communication.";
+        }
+
+        if ($topSpec) {
+            $insights[] = "Legal services in \"{$topSpec->name}\" are currently the most sought-after category, accounting for {$topSpec->total} appointments across the system. This trend highlights a significant market demand for expertise in this particular area of law.";
+        }
+
         return [
             'most_performing' => $mostPerforming ? [
                 'id' => $mostPerforming->id,
                 'firm_name' => $mostPerforming->firm_name,
-                'completed_appointments' => $mostPerforming->completed_count,
+                'completed_appointments' => (int)$mostPerforming->completed_count,
             ] : null,
             'most_rated' => $mostRated ? [
                 'id' => $mostRated->id,
                 'firm_name' => $mostRated->firm_name,
                 'average_rating' => round($mostRated->average_rating, 1),
-                'rating_count' => $mostRated->rating_count,
+                'rating_count' => (int)$mostRated->rating_count,
             ] : null,
+            'insights' => $insights,
         ];
     }
 }

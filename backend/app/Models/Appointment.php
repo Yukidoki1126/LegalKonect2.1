@@ -66,4 +66,9 @@ class Appointment extends Model
     {
         return $query->where('scheduled_at', '<', now());
     }
+
+    public function rating(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Rating::class);
+    }
 }

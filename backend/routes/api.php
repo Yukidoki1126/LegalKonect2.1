@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/appointments/{id}', [ClientController::class, 'showAppointment']);
         Route::post('/ratings', [ClientController::class, 'submitRating']);
         Route::get('/law-firms/{id}', [ClientController::class, 'viewLawFirm']);
+        Route::post('/appointments', [ClientController::class, 'createAppointment']);
     });
 
     // Law Firm routes

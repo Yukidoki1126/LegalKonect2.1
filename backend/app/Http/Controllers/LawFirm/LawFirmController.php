@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\LawFirm;
 
+use App\Events\AppointmentStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Client;
@@ -15,7 +16,7 @@ class LawFirmController extends Controller
      */
     public function profile(Request $request): JsonResponse
     {
-        $lawFirm = $request->user()->lawFirm->load('specializations');
+        $lawFirm = $request->user()->lawFirm->load(['specializations', 'ratings.client.user']);
 
         return response()->json($lawFirm);
     }
@@ -137,7 +138,7 @@ class LawFirmController extends Controller
     public function updateAppointment(Request $request, $id): JsonResponse
     {
         $validated = $request->validate([
-            'scheduled_at' => 'nullable|date|after:now',
+            'scheduled_at' => 'nullable|date',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
             'status' => 'nullable|in:pending,confirmed,cancelled,completed',
             'notes' => 'nullable|string|max:1000',
@@ -148,7 +149,18 @@ class LawFirmController extends Controller
             ->appointments()
             ->findOrFail($id);
 
+        // Restriction: Only allow marking as completed on or after the scheduled time
+        if (isset($validated['status']) && $validated['status'] === 'completed') {
+            if ($appointment->scheduled_at->isFuture()) {
+                return response()->json([
+                    'message' => 'Cannot mark appointment as completed before its scheduled date and time.',
+                ], 422);
+            }
+        }
+
         $appointment->update($validated);
+
+        broadcast(new AppointmentStatusUpdated($appointment->load(['client.user', 'lawFirm.user', 'specialization'])))->toOthers();
 
         return response()->json([
             'message' => 'Appointment updated successfully',
@@ -173,6 +185,8 @@ class LawFirmController extends Controller
             'status' => 'cancelled',
             'cancellation_reason' => $validated['cancellation_reason'] ?? null,
         ]);
+
+        broadcast(new AppointmentStatusUpdated($appointment->load(['client.user', 'lawFirm.user', 'specialization'])))->toOthers();
 
         return response()->json([
             'message' => 'Appointment cancelled successfully',

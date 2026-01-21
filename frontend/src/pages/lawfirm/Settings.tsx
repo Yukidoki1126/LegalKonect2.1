@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import { Specialization } from '../../types';
 import LawFirmLayout from '../../components/lawfirm/LawFirmLayout';
+import { GoogleMap, useJsApiLoader, Marker, Autocomplete, Libraries } from '@react-google-maps/api';
 import './LawFirmDashboard.css';
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+const libraries: Libraries = ["places"];
 
 export default function ProfileSettings() {
     const [formData, setFormData] = useState({
@@ -11,12 +15,23 @@ export default function ProfileSettings() {
         phone: '',
         email: '',
         address: '',
+        latitude: null as number | null,
+        longitude: null as number | null,
         specialization_ids: [] as number[],
     });
     const [specializations, setSpecializations] = useState<Specialization[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [showMapModal, setShowMapModal] = useState(false);
+
+    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+        libraries: libraries,
+    });
 
     useEffect(() => {
         loadData();
@@ -36,6 +51,8 @@ export default function ProfileSettings() {
                 phone: profile.phone || '',
                 email: profile.email || '',
                 address: profile.address || '',
+                latitude: profile.latitude,
+                longitude: profile.longitude,
                 specialization_ids: profile.specializations?.map(s => s.id) || [],
             });
             setSpecializations(specs);
@@ -48,6 +65,45 @@ export default function ProfileSettings() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handlePlaceChanged = () => {
+        if (autocompleteRef.current !== null) {
+            const place = autocompleteRef.current.getPlace();
+            if (place.geometry && place.geometry.location) {
+                setFormData(prev => ({
+                    ...prev,
+                    address: place.formatted_address || prev.address,
+                    latitude: place.geometry!.location!.lat(),
+                    longitude: place.geometry!.location!.lng(),
+                }));
+            }
+        }
+    };
+
+    const handleMapClick = (e: google.maps.MapMouseEvent) => {
+        if (e.latLng) {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+            
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                if (status === 'OK' && results && results[0]) {
+                    setFormData(prev => ({
+                        ...prev,
+                        address: results[0].formatted_address,
+                        latitude: lat,
+                        longitude: lng,
+                    }));
+                } else {
+                    setFormData(prev => ({
+                        ...prev,
+                        latitude: lat,
+                        longitude: lng,
+                    }));
+                }
+            });
+        }
     };
 
     const handleSpecializationToggle = (id: number) => {
@@ -65,7 +121,24 @@ export default function ProfileSettings() {
         setMessage({ type: '', text: '' });
 
         try {
-            await api.updateLawFirmProfile(formData);
+            // Update profile info
+            await api.updateLawFirmProfile({
+                firm_name: formData.firm_name,
+                description: formData.description,
+                phone: formData.phone,
+                email: formData.email,
+                specialization_ids: formData.specialization_ids,
+            });
+
+            // Update location if coordinates exist
+            if (formData.latitude && formData.longitude) {
+                await api.updateLawFirmLocation({
+                    latitude: formData.latitude,
+                    longitude: formData.longitude,
+                    address: formData.address,
+                });
+            }
+
             setMessage({ type: 'success', text: 'Profile updated successfully!' });
         } catch {
             setMessage({ type: 'error', text: 'Failed to update profile.' });
@@ -119,12 +192,37 @@ export default function ProfileSettings() {
                                 </div>
                                 <div className="form-group">
                                     <label>Office Address</label>
-                                    <input
-                                        type="text"
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleChange}
-                                    />
+                                    <div className="address-input-wrapper">
+                                        {isLoaded ? (
+                                            <Autocomplete
+                                                onLoad={ref => autocompleteRef.current = ref}
+                                                onPlaceChanged={handlePlaceChanged}
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="address"
+                                                    value={formData.address}
+                                                    onChange={handleChange}
+                                                    placeholder="Enter office address"
+                                                />
+                                            </Autocomplete>
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                name="address"
+                                                value={formData.address}
+                                                onChange={handleChange}
+                                            />
+                                        )}
+                                        <button 
+                                            type="button" 
+                                            className="map-pin-btn"
+                                            onClick={() => setShowMapModal(true)}
+                                            title="Pin on Map"
+                                        >
+                                            📍
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="form-group full-width">
                                     <label>Firm Description</label>
@@ -167,6 +265,39 @@ export default function ProfileSettings() {
                             </button>
                         </div>
                     </form>
+                )}
+
+                {showMapModal && isLoaded && (
+                    <div className="modal-overlay">
+                        <div className="modal map-modal">
+                            <div className="modal-header">
+                                <h3>Pin Office Location</h3>
+                                <button className="close-btn" onClick={() => setShowMapModal(false)}>&times;</button>
+                            </div>
+                            <div className="map-container">
+                                <GoogleMap
+                                    mapContainerStyle={{ width: '100%', height: '400px' }}
+                                    center={
+                                        formData.latitude && formData.longitude 
+                                        ? { lat: formData.latitude, lng: formData.longitude }
+                                        : { lat: 14.5995, lng: 120.9842 } // Default to Manila
+                                    }
+                                    zoom={15}
+                                    onClick={handleMapClick}
+                                >
+                                    {formData.latitude && formData.longitude && (
+                                        <Marker position={{ lat: formData.latitude, lng: formData.longitude }} />
+                                    )}
+                                </GoogleMap>
+                            </div>
+                            <div className="map-modal-footer">
+                                <p className="selected-address">
+                                    <strong>Selected Address:</strong> {formData.address || 'None selected'}
+                                </p>
+                                <button className="btn-primary" onClick={() => setShowMapModal(false)}>Confirm Location</button>
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
         </LawFirmLayout>

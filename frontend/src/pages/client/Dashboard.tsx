@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import { Recommendation, LawFirm } from '../../types';
+import ClientLayout from '../../components/client/ClientLayout';
 import './Dashboard.css';
 
 export default function ClientDashboard() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -15,10 +16,14 @@ export default function ClientDashboard() {
         rating_count: number;
         distance_km: number | null;
     } | null>(null);
+    const [bookingFirm, setBookingFirm] = useState<LawFirm | null>(null);
+    const [bookingNotes, setBookingNotes] = useState('');
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [bookingMessage, setBookingMessage] = useState({ type: '', text: '' });
 
     useEffect(() => {
         loadRecommendations();
-    }, []);
+    }, [user?.client?.latitude, user?.client?.longitude]);
 
     const handleViewFirm = async (id: number) => {
         try {
@@ -46,23 +51,51 @@ export default function ClientDashboard() {
     };
 
     const handleGetDirections = (lat: number, lng: number) => {
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+        let url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+        
+        // If client has location set, use it as origin for more accuracy
+        if (user?.client?.latitude && user?.client?.longitude) {
+            url += `&origin=${user.client.latitude},${user.client.longitude}`;
+        }
+        
         window.open(url, '_blank');
     };
 
-    return (
-        <div className="dashboard">
-            <header className="dashboard-header">
-                <div className="header-content">
-                    <h1>⚖️ LawFirm Locator</h1>
-                    <div className="user-info">
-                        <span>Welcome, {user?.name}</span>
-                        <button onClick={logout} className="btn-logout">Logout</button>
-                    </div>
-                </div>
-            </header>
+    const handleBookAppointment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!bookingFirm) return;
 
-            <main className="dashboard-main">
+        setBookingLoading(true);
+        setBookingMessage({ type: '', text: '' });
+
+        try {
+            // Using a specific date (today at 10 AM local) as a starting point 
+            // if we wanted to be more precise, but user asked to remove date selection.
+            // Backend will use this or its own 'now()'.
+            // Let's send a proper ISO string.
+            const scheduledAt = new Date().toISOString();
+
+            await api.bookAppointment({
+                law_firm_id: bookingFirm.id,
+                scheduled_at: scheduledAt,
+                notes: bookingNotes,
+            });
+            setBookingMessage({ type: 'success', text: 'Appointment requested successfully! You can see it in your appointments list.' });
+            setTimeout(() => {
+                setBookingFirm(null);
+                setBookingNotes('');
+                setBookingMessage({ type: '', text: '' });
+            }, 3000);
+        } catch {
+            setBookingMessage({ type: 'error', text: 'Failed to request appointment. Please try again.' });
+        } finally {
+            setBookingLoading(false);
+        }
+    };
+
+    return (
+        <ClientLayout>
+            <div className="dashboard-content">
                 <div className="dashboard-welcome">
                     <h2>Find Your Legal Assistance</h2>
                     <p>Based on your location and legal needs, here are our recommended law firms:</p>
@@ -160,7 +193,7 @@ export default function ClientDashboard() {
                         ))}
                     </div>
                 )}
-            </main>
+            </div>
 
             {/* View Firm Modal */}
             {viewingFirm && viewingData && (
@@ -209,6 +242,13 @@ export default function ClientDashboard() {
                                         <span>Email</span>
                                     </a>
                                 )}
+                                <button 
+                                    className="action-chip success"
+                                    onClick={() => setBookingFirm(viewingFirm)}
+                                >
+                                    <span className="icon">📅</span>
+                                    <span>Book Appointment</span>
+                                </button>
                             </div>
 
                             <div className="info-list">
@@ -268,6 +308,48 @@ export default function ClientDashboard() {
                     </div>
                 </div>
             )}
-        </div>
+
+            {/* Booking Modal */}
+            {bookingFirm && (
+                <div className="modal-overlay" onClick={() => { setBookingFirm(null); setBookingMessage({ type: '', text: '' }); }}>
+                    <div className="modal-content booking-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>📅 Book Appointment with {bookingFirm.firm_name}</h3>
+                            <button className="close-button" onClick={() => { setBookingFirm(null); setBookingMessage({ type: '', text: '' }); }}>✕</button>
+                        </div>
+                        
+                        <form onSubmit={handleBookAppointment} className="booking-form">
+                            <p className="booking-notice">
+                                When the firm has approved your request, they will give you a call and provide the date and time for your office consultation.
+                            </p>
+
+                            <div className="form-group">
+                                <label>Notes for the Lawyer</label>
+                                <textarea 
+                                    value={bookingNotes}
+                                    onChange={(e) => setBookingNotes(e.target.value)}
+                                    placeholder="Briefly describe your legal concern..."
+                                    rows={6}
+                                    required
+                                />
+                            </div>
+
+                            {bookingMessage.text && (
+                                <div className={`message-banner ${bookingMessage.type}`}>
+                                    {bookingMessage.text}
+                                </div>
+                            )}
+
+                            <div className="modal-footer">
+                                <button type="button" className="btn-secondary" onClick={() => setBookingFirm(null)}>Cancel</button>
+                                <button type="submit" className="btn-primary" disabled={bookingLoading}>
+                                    {bookingLoading ? 'Processing...' : 'Request Appointment'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </ClientLayout>
     );
 }

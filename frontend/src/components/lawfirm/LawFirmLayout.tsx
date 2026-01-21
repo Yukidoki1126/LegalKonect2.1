@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { LayoutDashboard, Calendar, ClipboardList, Star, Settings, LogOut, Scale } from '../icons/Icons';
 import './LawFirmLayout.css';
 
 interface LawFirmLayoutProps {
@@ -23,29 +24,33 @@ export default function LawFirmLayout({ children }: LawFirmLayoutProps) {
         <div className="law-firm-layout">
             <aside className="law-firm-sidebar">
                 <div className="sidebar-header">
-                    <span className="logo-icon">⚖️</span>
+                    <Scale className="logo-icon" size={24} />
                     <span className="logo-text">LegalKonect</span>
                 </div>
                 
                 <nav className="sidebar-nav">
                     <NavLink to="/law-firm/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <span className="icon">📊</span>
+                        <LayoutDashboard className="icon" size={20} />
                         <span className="label">Dashboard</span>
                     </NavLink>
                     {isApproved && (
                         <>
+                            <NavLink to="/law-firm/appointments" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                                <ClipboardList className="icon" size={20} />
+                                <span className="label">Appointments</span>
+                            </NavLink>
                             <NavLink to="/law-firm/calendar" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                                <span className="icon">📅</span>
+                                <Calendar className="icon" size={20} />
                                 <span className="label">Calendar</span>
                             </NavLink>
                             <NavLink to="/law-firm/reviews" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                                <span className="icon">⭐</span>
+                                <Star className="icon" size={20} />
                                 <span className="label">Reviews</span>
                             </NavLink>
                         </>
                     )}
                     <NavLink to="/law-firm/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <span className="icon">⚙️</span>
+                        <Settings className="icon" size={20} />
                         <span className="label">Profile Setting</span>
                     </NavLink>
                 </nav>
@@ -59,7 +64,7 @@ export default function LawFirmLayout({ children }: LawFirmLayoutProps) {
                         </div>
                     </div>
                     <button onClick={handleLogout} className="btn-logout">
-                        <span className="icon">🚪</span>
+                        <LogOut className="icon" size={20} />
                         <span className="label">Logout</span>
                     </button>
                 </div>

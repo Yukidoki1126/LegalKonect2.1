@@ -10,7 +10,15 @@ export default function Reviews() {
 
     useEffect(() => {
         loadData();
+
+        // Auto-refresh every 30 seconds to check for new reviews
+        const refreshInterval = setInterval(() => {
+            loadData();
+        }, 30000);
+
+        return () => clearInterval(refreshInterval);
     }, []);
+
 
     const loadData = async () => {
         setLoading(true);
@@ -55,7 +63,11 @@ export default function Reviews() {
                             <div className="reviews-list">
                                 {lawFirm?.ratings && lawFirm.ratings.length > 0 ? (
                                     lawFirm.ratings
-                                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                        .sort((a, b) => {
+                                            const dateB = b.created_at.includes('T') ? b.created_at : b.created_at.replace(' ', 'T') + 'Z';
+                                            const dateA = a.created_at.includes('T') ? a.created_at : a.created_at.replace(' ', 'T') + 'Z';
+                                            return new Date(dateB).getTime() - new Date(dateA).getTime();
+                                        })
                                         .map((rating) => (
                                         <div key={rating.id} className="review-card">
                                             <div className="review-header">
@@ -65,7 +77,9 @@ export default function Reviews() {
                                                     </div>
                                                     <div>
                                                         <p className="client-name">{rating.client?.user?.name || 'Anonymous'}</p>
-                                                        <p className="review-date">{new Date(rating.created_at).toLocaleDateString()}</p>
+                                                        <p className="review-date">
+                                                            {new Date(rating.created_at.includes('T') ? rating.created_at : rating.created_at.replace(' ', 'T') + 'Z').toLocaleDateString()}
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <div className="rating-stars">
