@@ -1,8 +1,34 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import api from '../../services/api';
-import { Appointment } from '../../types';
-import LawFirmLayout from '../../components/lawfirm/LawFirmLayout';
-import './LawFirmDashboard.css';
+import api from '@/services/api';
+import { Appointment } from '@/types';
+import LawFirmLayoutNew from '@/components/lawfirm/LawFirmLayoutNew';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    Clock,
+    CheckCircle,
+    XCircle,
+    Calendar,
+    User,
+    Mail,
+    Phone,
+    FileText,
+    AlertCircle,
+    Bell
+} from 'lucide-react';
 
 export default function Appointments() {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -119,261 +145,357 @@ export default function Appointments() {
 
     const getStatusBadgeClass = (status: string) => {
         switch (status) {
-            case 'pending': return 'status-badge pending';
-            case 'confirmed': return 'status-badge confirmed';
-            case 'completed': return 'status-badge completed';
-            case 'cancelled': return 'status-badge cancelled';
-            default: return 'status-badge';
+            case 'pending': return 'secondary';
+            case 'confirmed': return 'default';
+            case 'completed': return 'outline';
+            case 'cancelled': return 'destructive';
+            default: return 'secondary';
         }
     };
 
+    const getStatusIcon = (status: string) => {
+        switch (status) {
+            case 'pending': return <Clock className="h-3 w-3" />;
+            case 'confirmed': return <CheckCircle className="h-3 w-3" />;
+            case 'completed': return <CheckCircle className="h-3 w-3" />;
+            case 'cancelled': return <XCircle className="h-3 w-3" />;
+            default: return <Clock className="h-3 w-3" />;
+        }
+    };
+
+    if (loading) {
+        return (
+            <LawFirmLayoutNew>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p className="text-muted-foreground">Loading appointments...</p>
+                    </div>
+                </div>
+            </LawFirmLayoutNew>
+        );
+    }
+
     return (
-        <LawFirmLayout>
-            <div className="law-firm-appointments">
-                <div className="page-header">
-                    <h2>📋 Appointment Management</h2>
-                    <p>Approve client requests and manage your schedule</p>
-                    <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <span>🔄 Auto-refreshing every 20s • Last updated: {lastRefresh.toLocaleTimeString()}</span>
-                        {newRequestCount > 0 && (
-                            <span style={{
-                                background: '#22c55e',
-                                color: '#fff',
-                                padding: '0.25rem 0.75rem',
-                                borderRadius: '12px',
-                                fontWeight: 'bold',
-                                animation: 'pulse 1s infinite'
-                            }}>
-                                🔔 {newRequestCount} New Request{newRequestCount > 1 ? 's' : ''}!
-                            </span>
-                        )}
+        <LawFirmLayoutNew>
+            <div className="space-y-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
+                        <p className="text-muted-foreground">
+                            Manage client appointments and consultations
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        Last updated: {lastRefresh.toLocaleTimeString()}
                     </div>
                 </div>
 
-                {loading ? (
-                    <div className="loading">Loading appointments...</div>
-                ) : (
-                    <div className="appointments-container">
-                        <div className="appointments-tabs">
-                            <button 
-                                className={`tab-item ${activeTab === 'pending' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('pending')}
-                            >
-                                ⏳ Pending ({appointments.filter(a => a.status === 'pending').length})
-                            </button>
-                            <button 
-                                className={`tab-item ${activeTab === 'confirmed' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('confirmed')}
-                            >
-                                ✅ Confirmed ({appointments.filter(a => a.status === 'confirmed').length})
-                            </button>
-                            <button 
-                                className={`tab-item ${activeTab === 'completed' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('completed')}
-                            >
-                                ⭐ Completed ({appointments.filter(a => a.status === 'completed').length})
-                            </button>
-                            <button 
-                                className={`tab-item ${activeTab === 'cancelled' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('cancelled')}
-                            >
-                                ✕ Declined ({appointments.filter(a => a.status === 'cancelled').length})
-                            </button>
-                        </div>
+                {/* New Request Alert */}
+                {newRequestCount > 0 && (
+                    <Card className="border-green-500 bg-green-50 dark:bg-green-950">
+                        <CardContent className="flex items-center gap-3 pt-6">
+                            <Bell className="h-5 w-5 text-green-600 animate-pulse" />
+                            <p className="font-medium text-green-900 dark:text-green-100">
+                                🎉 {newRequestCount} new appointment request{newRequestCount > 1 ? 's' : ''}!
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
 
-                        <div className="tab-content">
-                            <div className="appointments-list-full">
-                                {appointments.filter(a => a.status === activeTab).map(apt => (
-                                    <div key={apt.id} className={`appointment-card-full ${apt.status}`}>
-                                        <div className="apt-header">
-                                            <div className="client-info-large">
-                                                <div className="client-avatar-small" style={apt.status === 'cancelled' ? { background: '#ef4444' } : apt.status === 'completed' ? { background: '#22c55e' } : {}}>
-                                                    {apt.client?.user?.name?.[0] || 'C'}
+                {/* Tabs */}
+                <Tabs defaultValue="pending" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+                    <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="pending" className="gap-2">
+                            <Clock className="h-4 w-4" />
+                            Pending ({appointments.filter(a => a.status === 'pending').length})
+                        </TabsTrigger>
+                        <TabsTrigger value="confirmed" className="gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            Confirmed ({appointments.filter(a => a.status === 'confirmed').length})
+                        </TabsTrigger>
+                        <TabsTrigger value="completed" className="gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            Completed ({appointments.filter(a => a.status === 'completed').length})
+                        </TabsTrigger>
+                        <TabsTrigger value="cancelled" className="gap-2">
+                            <XCircle className="h-4 w-4" />
+                            Cancelled ({appointments.filter(a => a.status === 'cancelled').length})
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value={activeTab} className="space-y-4 mt-6">
+                        {appointments.filter(a => a.status === activeTab).length === 0 ? (
+                            <Card>
+                                <CardContent className="flex flex-col items-center justify-center py-12">
+                                    <Calendar className="h-12 w-12 text-muted-foreground mb-3" />
+                                    <p className="text-sm text-muted-foreground">
+                                        No {activeTab} appointments found
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            appointments.filter(a => a.status === activeTab).map(apt => (
+                                <Card key={apt.id}>
+                                    <CardHeader>
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-start gap-4 flex-1">
+                                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                                    <User className="h-6 w-6 text-primary" />
                                                 </div>
-                                                <div>
-                                                    <h4>{apt.client?.user?.name}</h4>
-                                                    {apt.status === 'pending' ? (
-                                                        <span className="request-date">Requested: {new Date(apt.created_at.includes('T') ? apt.created_at : apt.created_at.replace(' ', 'T') + 'Z').toLocaleDateString()}</span>
-                                                    ) : apt.status === 'cancelled' ? (
-                                                        <span className="request-date">Declined on: {new Date(apt.updated_at.includes('T') ? apt.updated_at : apt.updated_at.replace(' ', 'T') + 'Z').toLocaleDateString()}</span>
-                                                    ) : (
-                                                        <span className="scheduled-time">📅 {new Date(apt.scheduled_at.includes('T') ? apt.scheduled_at : apt.scheduled_at.replace(' ', 'T') + 'Z').toLocaleString()}</span>
-                                                    )}
+                                                <div className="flex-1 min-w-0">
+                                                    <CardTitle className="text-lg">
+                                                        {apt.client?.user?.name || 'Client'}
+                                                    </CardTitle>
+                                                    <CardDescription className="flex flex-col gap-1 mt-1">
+                                                        {apt.status === 'pending' ? (
+                                                            <span className="flex items-center gap-1">
+                                                                <Clock className="h-3 w-3" />
+                                                                Requested: {new Date(apt.created_at.includes('T') ? apt.created_at : apt.created_at.replace(' ', 'T') + 'Z').toLocaleString()}
+                                                            </span>
+                                                        ) : apt.status === 'cancelled' ? (
+                                                            <span className="flex items-center gap-1">
+                                                                <XCircle className="h-3 w-3" />
+                                                                Cancelled: {new Date(apt.updated_at.includes('T') ? apt.updated_at : apt.updated_at.replace(' ', 'T') + 'Z').toLocaleDateString()}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="flex items-center gap-1">
+                                                                <Calendar className="h-3 w-3" />
+                                                                {new Date(apt.scheduled_at.includes('T') ? apt.scheduled_at : apt.scheduled_at.replace(' ', 'T') + 'Z').toLocaleString()}
+                                                            </span>
+                                                        )}
+                                                    </CardDescription>
                                                 </div>
                                             </div>
-                                            <div className="apt-status-actions">
-                                                <span className={getStatusBadgeClass(apt.status)}>{apt.status}</span>
-                                            </div>
+                                            <Badge variant={getStatusBadgeClass(apt.status)} className="gap-1">
+                                                {getStatusIcon(apt.status)}
+                                                {apt.status.charAt(0).toUpperCase() + apt.status.slice(1)}
+                                            </Badge>
                                         </div>
-                                        
+                                    </CardHeader>
+                                    <CardContent>
                                         {apt.status === 'cancelled' && apt.cancellation_reason && (
-                                            <div className="apt-body">
-                                                <div className="apt-detail">
-                                                    <strong>Reason:</strong>
-                                                    <p>{apt.cancellation_reason}</p>
-                                                </div>
+                                            <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                                                <p className="text-sm text-destructive font-medium mb-1">Cancellation Reason:</p>
+                                                <p className="text-sm">{apt.cancellation_reason}</p>
                                             </div>
                                         )}
 
-                                        <div className="apt-actions">
-                                            <button 
-                                                className="btn-text-small"
+                                        {apt.notes && (
+                                            <div className="mb-4 p-3 rounded-lg bg-muted">
+                                                <p className="text-sm text-muted-foreground font-medium mb-1">Client Notes:</p>
+                                                <p className="text-sm">{apt.notes}</p>
+                                            </div>
+                                        )}
+
+                                        <div className="flex flex-wrap gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 onClick={() => setViewingClient(apt)}
-                                                title="View Client Details"
                                             >
-                                                👁 View
-                                            </button>
+                                                <User className="mr-2 h-4 w-4" />
+                                                View Details
+                                            </Button>
 
                                             {apt.status === 'pending' && (
                                                 <>
-                                                    <button 
-                                                        className="btn-primary-small"
+                                                    <Button
+                                                        size="sm"
                                                         onClick={() => openScheduleModal(apt)}
                                                         disabled={updating === apt.id}
                                                     >
+                                                        <CheckCircle className="mr-2 h-4 w-4" />
                                                         Approve & Schedule
-                                                    </button>
-                                                    <button 
-                                                        className="btn-danger-small"
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
                                                         onClick={() => handleUpdateStatus(apt.id, 'cancelled')}
                                                         disabled={updating === apt.id}
                                                     >
+                                                        <XCircle className="mr-2 h-4 w-4" />
                                                         Decline
-                                                    </button>
+                                                    </Button>
                                                 </>
                                             )}
 
                                             {apt.status === 'confirmed' && (
                                                 <>
-                                                    <button 
-                                                        className="btn-success-small"
+                                                    <Button
+                                                        size="sm"
                                                         onClick={() => handleUpdateStatus(apt.id, 'completed')}
                                                         disabled={updating === apt.id || new Date(apt.scheduled_at.includes('T') ? apt.scheduled_at : apt.scheduled_at.replace(' ', 'T') + 'Z') > new Date()}
-                                                        title={new Date(apt.scheduled_at.includes('T') ? apt.scheduled_at : apt.scheduled_at.replace(' ', 'T') + 'Z') > new Date() ? "Cannot mark as completed before scheduled time" : ""}
                                                     >
+                                                        <CheckCircle className="mr-2 h-4 w-4" />
                                                         Mark Completed
-                                                    </button>
-                                                    <button 
-                                                        className="btn-text-small"
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
                                                         onClick={() => openScheduleModal(apt)}
                                                         disabled={updating === apt.id}
                                                     >
+                                                        <Calendar className="mr-2 h-4 w-4" />
                                                         Reschedule
-                                                    </button>
-                                                    <button 
-                                                        className="btn-danger-small"
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
                                                         onClick={() => handleUpdateStatus(apt.id, 'cancelled')}
                                                         disabled={updating === apt.id}
                                                     >
+                                                        <XCircle className="mr-2 h-4 w-4" />
                                                         Cancel
-                                                    </button>
+                                                    </Button>
                                                 </>
                                             )}
-
                                         </div>
-                                    </div>
-                                ))}
-                                {appointments.filter(a => a.status === activeTab).length === 0 && (
-                                    <p className="empty-column-msg">No {activeTab} appointments found</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )  }
+                                    </CardContent>
+                                </Card>
+                            ))
+                        )}
+                    </TabsContent>
+                </Tabs>
 
-                {viewingClient && (
-                    <div className="modal-overlay" onClick={() => setViewingClient(null)}>
-                        <div className="modal client-details-modal" onClick={e => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3>👤 Client Information</h3>
-                                <button className="close-button" onClick={() => setViewingClient(null)}>✕</button>
-                            </div>
-                            <div className="client-details-body">
-                                <div className="detail-row">
-                                    <span className="detail-label">Name:</span>
-                                    <span className="detail-value">{viewingClient.client?.user?.name}</span>
+                {/* View Client Dialog */}
+                <Dialog open={!!viewingClient} onOpenChange={() => setViewingClient(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <User className="h-5 w-5" />
+                                Client Information
+                            </DialogTitle>
+                            <DialogDescription>
+                                Contact and consultation details
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        {viewingClient && (
+                            <div className="space-y-4">
+                                <div className="grid gap-2">
+                                    <Label>Name</Label>
+                                    <div className="flex items-center gap-2">
+                                        <User className="h-4 w-4 text-muted-foreground" />
+                                        <span>{viewingClient.client?.user?.name}</span>
+                                    </div>
                                 </div>
-                                <div className="detail-row">
-                                    <span className="detail-label">Email:</span>
-                                    <span className="detail-value">
-                                        <a href={`mailto:${viewingClient.client?.user?.email}`}>{viewingClient.client?.user?.email}</a>
-                                    </span>
+
+                                <div className="grid gap-2">
+                                    <Label>Email</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Mail className="h-4 w-4 text-muted-foreground" />
+                                        <a 
+                                            href={`mailto:${viewingClient.client?.user?.email}`}
+                                            className="text-primary hover:underline"
+                                        >
+                                            {viewingClient.client?.user?.email}
+                                        </a>
+                                    </div>
                                 </div>
-                                <div className="detail-row">
-                                    <span className="detail-label">Phone:</span>
-                                    <span className="detail-value">
+
+                                <div className="grid gap-2">
+                                    <Label>Phone</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Phone className="h-4 w-4 text-muted-foreground" />
                                         {viewingClient.client?.phone ? (
-                                            <a href={`tel:${viewingClient.client.phone}`}>{viewingClient.client.phone}</a>
-                                        ) : 'Not provided'}
-                                    </span>
-                                </div>
-                                <div className="detail-row specialization-detail">
-                                    <span className="detail-label">Looking for:</span>
-                                    <div className="specializations-tags">
-                                        {viewingClient.client?.specializations && viewingClient.client.specializations.length > 0 ? (
-                                            viewingClient.client.specializations.map(s => (
-                                                <span key={s.id} className="tag-small">{s.name}</span>
-                                            ))
+                                            <a 
+                                                href={`tel:${viewingClient.client.phone}`}
+                                                className="text-primary hover:underline"
+                                            >
+                                                {viewingClient.client.phone}
+                                            </a>
                                         ) : (
-                                            <span className="detail-value">General Consultation</span>
+                                            <span className="text-muted-foreground">Not provided</span>
                                         )}
                                     </div>
                                 </div>
-                                <div className="detail-row">
-                                    <span className="detail-label">Client's Notes:</span>
-                                    <p className="detail-value" style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>
-                                        {viewingClient.notes || 'No notes provided'}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="modal-actions">
-                                <button className="btn-primary" onClick={() => setViewingClient(null)}>Close</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
-                {showScheduleModal && (
-                    <div className="modal-overlay">
-                        <div className="modal">
-                            <h3>Schedule Appointment</h3>
-                            <p>Set the date and time for consultation with <strong>{showScheduleModal.client?.user?.name}</strong></p>
-                            
-                            <div className="form-group">
-                                <label>Date & Time</label>
-                                <input 
-                                    type="datetime-local" 
+                                {viewingClient.client?.specializations && viewingClient.client.specializations.length > 0 && (
+                                    <div className="grid gap-2">
+                                        <Label>Looking for</Label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {viewingClient.client.specializations.map(s => (
+                                                <Badge key={s.id} variant="secondary">
+                                                    {s.name}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {viewingClient.notes && (
+                                    <div className="grid gap-2">
+                                        <Label>Client's Notes</Label>
+                                        <div className="p-3 rounded-lg bg-muted">
+                                            <p className="text-sm whitespace-pre-wrap">
+                                                {viewingClient.notes}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <DialogFooter>
+                            <Button onClick={() => setViewingClient(null)}>Close</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Schedule Dialog */}
+                <Dialog open={!!showScheduleModal} onOpenChange={() => setShowScheduleModal(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Calendar className="h-5 w-5" />
+                                Schedule Appointment
+                            </DialogTitle>
+                            <DialogDescription>
+                                Set the date and time for consultation with <strong>{showScheduleModal?.client?.user?.name}</strong>
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="schedule-date">Date & Time</Label>
+                                <Input
+                                    id="schedule-date"
+                                    type="datetime-local"
                                     value={scheduleDate}
                                     onChange={(e) => setScheduleDate(e.target.value)}
-                                    required
                                     min={new Date().toISOString().substring(0, 16)}
                                 />
                             </div>
 
-                            <div className="form-group">
-                                <label>Firm's Note (Optional)</label>
-                                <textarea 
+                            <div className="grid gap-2">
+                                <Label htmlFor="schedule-notes">Note (Optional)</Label>
+                                <Textarea
+                                    id="schedule-notes"
                                     value={scheduleNotes}
                                     onChange={(e) => setScheduleNotes(e.target.value)}
-                                    placeholder="Type your note for the client here..."
+                                    placeholder="Add a note for the client..."
                                     rows={4}
                                 />
                             </div>
-
-                            <div className="modal-actions">
-                                <button onClick={() => setShowScheduleModal(null)}>Cancel</button>
-                                <button 
-                                    className="btn-primary" 
-                                    disabled={!scheduleDate || updating !== null}
-                                    onClick={() => handleUpdateStatus(showScheduleModal.id, 'confirmed', scheduleDate, scheduleNotes)}
-                                >
-                                    {updating === showScheduleModal.id ? 'Saving...' : 'Confirm Schedule'}
-                                </button>
-                            </div>
                         </div>
-                    </div>
-                )}
+
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setShowScheduleModal(null)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                disabled={!scheduleDate || updating !== null}
+                                onClick={() => showScheduleModal && handleUpdateStatus(showScheduleModal.id, 'confirmed', scheduleDate, scheduleNotes)}
+                            >
+                                {updating === showScheduleModal?.id ? 'Saving...' : 'Confirm Schedule'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
-        </LawFirmLayout>
+        </LawFirmLayoutNew>
     );
 }

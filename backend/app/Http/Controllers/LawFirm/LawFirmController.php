@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LawFirmController extends Controller
 {
@@ -252,5 +253,53 @@ class LawFirmController extends Controller
             'cancelled' => '#ef4444',   // Red
             default => '#6b7280',       // Gray
         };
+    }
+
+    /**
+     * Upload profile image
+     */
+    public function uploadProfileImage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120', // 5MB max
+        ]);
+
+        $lawFirm = $request->user()->lawFirm;
+
+        // Delete old image if exists
+        if ($lawFirm->profile_image) {
+            Storage::disk('r2')->delete($lawFirm->profile_image);
+        }
+
+        // Generate unique filename
+        $filename = 'law-firms/' . $lawFirm->id . '/' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+
+        // Upload to R2
+        Storage::disk('r2')->put($filename, file_get_contents($request->file('image')), 'public');
+
+        // Update database
+        $lawFirm->update(['profile_image' => $filename]);
+
+        return response()->json([
+            'message' => 'Profile image uploaded successfully',
+            'profile_image_url' => $lawFirm->profile_image_url,
+        ]);
+    }
+
+    /**
+     * Delete profile image
+     */
+    public function deleteProfileImage(Request $request): JsonResponse
+    {
+        $lawFirm = $request->user()->lawFirm;
+
+        if ($lawFirm->profile_image) {
+            Storage::disk('r2')->delete($lawFirm->profile_image);
+            $lawFirm->update(['profile_image' => null]);
+        }
+
+        return response()->json([
+            'message' => 'Profile image deleted successfully',
+        ]);
     }
 }

@@ -25,6 +25,7 @@ class LawFirm extends Model
         'verification_status',
         'rejection_reason',
         'verified_at',
+        'profile_image',
     ];
 
     protected $casts = [
@@ -32,6 +33,17 @@ class LawFirm extends Model
         'longitude' => 'float',
         'verified_at' => 'datetime',
     ];
+
+    protected $appends = ['profile_image_url'];
+
+    public function getProfileImageUrlAttribute(): ?string
+    {
+        if (!$this->profile_image) {
+            return null;
+        }
+
+        return config('filesystems.disks.r2.url') . '/' . $this->profile_image;
+    }
 
     public function user(): BelongsTo
     {

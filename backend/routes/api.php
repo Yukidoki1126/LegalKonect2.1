@@ -57,6 +57,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/profile', [LawFirmController::class, 'profile']);
         Route::put('/profile', [LawFirmController::class, 'updateProfile']);
         Route::put('/location', [LawFirmController::class, 'updateLocation']);
+        Route::post('/profile/image', [LawFirmController::class, 'uploadProfileImage']);
+        Route::delete('/profile/image', [LawFirmController::class, 'deleteProfileImage']);
 
         // Routes that require approval
         Route::middleware('law_firm.approved')->group(function () {

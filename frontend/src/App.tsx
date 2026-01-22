@@ -8,17 +8,18 @@ import RegisterClient from './pages/auth/RegisterClient';
 import RegisterLawFirm from './pages/auth/RegisterLawFirm';
 
 // Dashboard Pages
-import ClientDashboard from './pages/client/Dashboard';
-import ClientSettings from './pages/client/Settings';
-import ClientAppointments from './pages/client/Appointments';
-import LawFirmDashboard from './pages/lawfirm/Dashboard';
+import ClientDashboard from './pages/client/DashboardModern';
+import ClientSettings from './pages/client/SettingsModern';
+import ClientAppointments from './pages/client/AppointmentsModern';
+import LawFirmDashboard from './pages/lawfirm/DashboardModern';
 import LawFirmAppointments from './pages/lawfirm/Appointments';
 import LawFirmCalendar from './pages/lawfirm/Calendar';
 import LawFirmReviews from './pages/lawfirm/Reviews';
 import LawFirmSettings from './pages/lawfirm/Settings';
-import AdminDashboard from './pages/admin/Dashboard';
-import Verification from './pages/admin/Verification';
-import Analytics from './pages/admin/Analytics';
+import AdminDashboard from './pages/admin/DashboardModern';
+import Verification from './pages/admin/VerificationModern';
+import Analytics from './pages/admin/AnalyticsModern';
+import TestShadcn from './pages/TestShadcn';
 
 import './App.css';
 
@@ -82,6 +83,9 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
+      {/* Test Route - Remove after testing */}
+      <Route path="/test-shadcn" element={<TestShadcn />} />
+      
       {/* Public Routes */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route

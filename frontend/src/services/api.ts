@@ -232,6 +232,23 @@ class ApiService {
         return response.data;
     }
 
+    async uploadLawFirmProfileImage(file: File): Promise<{ message: string; profile_image_url: string }> {
+        const formData = new FormData();
+        formData.append('image', file);
+        // Unset Content-Type so Axios can set multipart/form-data with proper boundary
+        const response = await this.api.post('/law-firm/profile/image', formData, {
+            headers: {
+                'Content-Type': undefined,
+            },
+        });
+        return response.data;
+    }
+
+    async deleteLawFirmProfileImage(): Promise<{ message: string }> {
+        const response = await this.api.delete('/law-firm/profile/image');
+        return response.data;
+    }
+
     // Admin endpoints
     async getAdminDashboard(): Promise<{ stats: DashboardStats; top_specializations: { name: string; count: number }[] }> {
         const response = await this.api.get('/admin/dashboard');
