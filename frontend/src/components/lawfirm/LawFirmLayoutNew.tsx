@@ -4,13 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-    LayoutDashboard, 
-    Calendar, 
-    ClipboardList, 
-    Star, 
-    Settings, 
-    LogOut, 
+import {
+    LayoutDashboard,
+    Calendar,
+    ClipboardList,
+    Star,
+    Settings,
+    LogOut,
     Scale,
     Menu,
     X,
@@ -100,10 +100,9 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                                 key={item.name}
                                 to={item.href}
                                 className={({ isActive }) =>
-                                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        isActive
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                     }`
                                 }
                             >
@@ -180,10 +179,9 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                                         to={item.href}
                                         onClick={() => setSidebarOpen(false)}
                                         className={({ isActive }) =>
-                                            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                                isActive
-                                                    ? 'bg-primary text-primary-foreground'
-                                                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                             }`
                                         }
                                     >
@@ -258,12 +256,6 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                             </Badge>
                         )}
                     </div>
-
-                    {/* Notifications */}
-                    <Button variant="ghost" size="sm" className="relative">
-                        <Bell className="h-5 w-5" />
-                        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
-                    </Button>
 
                     {/* User info */}
                     <div className="hidden lg:flex items-center gap-2">

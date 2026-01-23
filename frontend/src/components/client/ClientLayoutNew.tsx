@@ -3,11 +3,11 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-    LayoutDashboard, 
-    Calendar, 
-    Settings, 
-    LogOut, 
+import {
+    LayoutDashboard,
+    Calendar,
+    Settings,
+    LogOut,
     Scale,
     Menu,
     X,
@@ -56,10 +56,9 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                     key={item.name}
                                     to={item.href}
                                     className={({ isActive }) =>
-                                        `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                            isActive
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                        `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                         }`
                                     }
                                 >
@@ -72,12 +71,6 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
 
                     {/* Right side */}
                     <div className="flex items-center gap-3">
-                        {/* Notifications */}
-                        <Button variant="ghost" size="sm" className="relative">
-                            <Bell className="h-5 w-5" />
-                            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
-                        </Button>
-
                         {/* User Menu - Desktop */}
                         <div className="hidden md:block relative">
                             <Button
@@ -99,8 +92,8 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                             {/* Dropdown Menu */}
                             {userMenuOpen && (
                                 <>
-                                    <div 
-                                        className="fixed inset-0 z-40" 
+                                    <div
+                                        className="fixed inset-0 z-40"
                                         onClick={() => setUserMenuOpen(false)}
                                     />
                                     <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50">
@@ -157,10 +150,9 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                     to={item.href}
                                     onClick={() => setMobileMenuOpen(false)}
                                     className={({ isActive }) =>
-                                        `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                                            isActive
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                        `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                         }`
                                     }
                                 >

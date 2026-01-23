@@ -18,6 +18,7 @@ import LawFirmReviews from './pages/lawfirm/Reviews';
 import LawFirmSettings from './pages/lawfirm/Settings';
 import AdminDashboard from './pages/admin/DashboardModern';
 import Verification from './pages/admin/VerificationModern';
+import DtiVerification from './pages/admin/DtiVerification';
 import Analytics from './pages/admin/AnalyticsModern';
 import TestShadcn from './pages/TestShadcn';
 
@@ -85,7 +86,7 @@ function AppRoutes() {
     <Routes>
       {/* Test Route - Remove after testing */}
       <Route path="/test-shadcn" element={<TestShadcn />} />
-      
+
       {/* Public Routes */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route
@@ -195,6 +196,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <Verification />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/dti-verification"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DtiVerification />
           </ProtectedRoute>
         }
       />
