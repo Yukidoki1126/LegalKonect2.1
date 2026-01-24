@@ -161,15 +161,15 @@ export default function AppointmentsModern() {
     ).sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
 
     const renderAppointmentCard = (apt: Appointment) => (
-        <Card key={apt.id} className="hover:shadow-lg transition-shadow">
+        <Card key={apt.id} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom-4">
             <CardHeader>
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1">
-                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
                             <Building2 className="h-6 w-6 text-primary" />
                         </div>
                         <div className="flex-1">
-                            <CardTitle className="text-xl">{apt.law_firm?.firm_name}</CardTitle>
+                            <CardTitle className="text-xl text-foreground">{apt.law_firm?.firm_name}</CardTitle>
                             <CardDescription className="flex items-center gap-2 mt-1">
                                 {apt.specialization?.name || 'General Legal'}
                                 {apt.law_firm?.phone && (
@@ -192,14 +192,14 @@ export default function AppointmentsModern() {
                     <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                         <Calendar className="h-5 w-5 text-primary mt-0.5" />
                         <div className="flex-1">
-                            <p className="text-sm font-medium">Date</p>
+                            <p className="text-sm font-medium text-foreground">Date</p>
                             <p className="text-sm text-muted-foreground">{formatDate(apt.scheduled_at)}</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                         <Clock className="h-5 w-5 text-primary mt-0.5" />
                         <div className="flex-1">
-                            <p className="text-sm font-medium">Time</p>
+                            <p className="text-sm font-medium text-foreground">Time</p>
                             <p className="text-sm text-muted-foreground">{formatTime(apt.scheduled_at)}</p>
                         </div>
                     </div>
@@ -207,7 +207,7 @@ export default function AppointmentsModern() {
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 sm:col-span-2">
                             <MapPin className="h-5 w-5 text-primary mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-sm font-medium">Location</p>
+                                <p className="text-sm font-medium text-foreground">Location</p>
                                 <p className="text-sm text-muted-foreground">{apt.law_firm.address}</p>
                             </div>
                         </div>
@@ -219,7 +219,7 @@ export default function AppointmentsModern() {
                     <div className="p-3 rounded-lg border bg-card">
                         <div className="flex items-start gap-2 mb-2">
                             <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                            <p className="text-sm font-medium">Your Notes</p>
+                            <p className="text-sm font-medium text-foreground">Your Notes</p>
                         </div>
                         <p className="text-sm text-muted-foreground pl-6">{apt.notes}</p>
                     </div>
@@ -240,10 +240,10 @@ export default function AppointmentsModern() {
                 {apt.status === 'completed' && !apt.rating && (
                     <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed">
                         <div>
-                            <p className="text-sm font-medium">How was your consultation?</p>
+                            <p className="text-sm font-medium text-foreground">How was your consultation?</p>
                             <p className="text-sm text-muted-foreground">Share your experience</p>
                         </div>
-                        <Button onClick={() => handleRateClick(apt)} className="gap-2">
+                        <Button onClick={() => handleRateClick(apt)} className="gap-2 transition-all duration-300 hover:scale-105">
                             <Star className="h-4 w-4" />
                             Rate Now
                         </Button>
@@ -253,7 +253,7 @@ export default function AppointmentsModern() {
                 {apt.rating && (
                     <div className="p-4 rounded-lg border bg-card space-y-2">
                         <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium">Your Rating & Review</p>
+                            <p className="text-sm font-medium text-foreground">Your Rating & Review</p>
                             {renderStars(apt.rating.rating)}
                         </div>
                         {apt.rating.review && (
@@ -282,15 +282,15 @@ export default function AppointmentsModern() {
         <ClientLayoutNew>
             <div className="space-y-6">
                 {/* Header */}
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">My Appointments</h1>
+                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">My Appointments</h1>
                     <p className="text-muted-foreground">
                         Track and manage your legal consultations
                     </p>
                 </div>
 
                 {error && (
-                    <Card className="border-destructive">
+                    <Card className="border-destructive animate-in fade-in slide-in-from-top-2 duration-300">
                         <CardContent className="flex items-center gap-3 pt-6">
                             <AlertCircle className="h-5 w-5 text-destructive" />
                             <p className="text-destructive">{error}</p>
@@ -299,23 +299,23 @@ export default function AppointmentsModern() {
                 )}
 
                 {/* Tabs */}
-                <Tabs defaultValue="upcoming" className="space-y-4">
+                <Tabs defaultValue="upcoming" className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <TabsList>
-                        <TabsTrigger value="upcoming" className="gap-2">
+                        <TabsTrigger value="upcoming" className="gap-2 transition-all duration-200">
                             Upcoming
-                            <Badge variant="secondary">{upcomingAppointments.length}</Badge>
+                            <Badge variant="secondary" className="transition-all duration-200">{upcomingAppointments.length}</Badge>
                         </TabsTrigger>
-                        <TabsTrigger value="past" className="gap-2">
+                        <TabsTrigger value="past" className="gap-2 transition-all duration-200">
                             Past & Cancelled
-                            <Badge variant="secondary">{pastAppointments.length}</Badge>
+                            <Badge variant="secondary" className="transition-all duration-200">{pastAppointments.length}</Badge>
                         </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="upcoming" className="space-y-4">
                         {upcomingAppointments.length === 0 ? (
-                            <Card>
+                            <Card className="animate-in fade-in zoom-in-95 duration-500">
                                 <CardContent className="flex flex-col items-center justify-center py-12">
-                                    <Calendar className="h-12 w-12 text-muted-foreground mb-3" />
+                                    <Calendar className="h-12 w-12 text-muted-foreground mb-3 animate-pulse" />
                                     <p className="text-sm text-muted-foreground">
                                         You don't have any upcoming appointments
                                     </p>
@@ -328,9 +328,9 @@ export default function AppointmentsModern() {
 
                     <TabsContent value="past" className="space-y-4">
                         {pastAppointments.length === 0 ? (
-                            <Card>
+                            <Card className="animate-in fade-in zoom-in-95 duration-500">
                                 <CardContent className="flex flex-col items-center justify-center py-12">
-                                    <Calendar className="h-12 w-12 text-muted-foreground mb-3" />
+                                    <Calendar className="h-12 w-12 text-muted-foreground mb-3 animate-pulse" />
                                     <p className="text-sm text-muted-foreground">
                                         No past appointments found
                                     </p>
@@ -348,9 +348,9 @@ export default function AppointmentsModern() {
                     setRating(0);
                     setReview('');
                 }}>
-                    <DialogContent>
+                    <DialogContent className="animate-in fade-in zoom-in-95 duration-300">
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
+                            <DialogTitle className="flex items-center gap-2 text-foreground">
                                 <Star className="h-5 w-5" />
                                 Rate Your Consultation
                             </DialogTitle>
@@ -387,10 +387,11 @@ export default function AppointmentsModern() {
                                         setRating(0);
                                         setReview('');
                                     }}
+                                    className="transition-all duration-200 hover:scale-105"
                                 >
                                     Cancel
                                 </Button>
-                                <Button type="submit" disabled={submitting || rating === 0}>
+                                <Button type="submit" disabled={submitting || rating === 0} className="transition-all duration-200 hover:scale-105">
                                     {submitting ? 'Submitting...' : 'Submit Rating'}
                                 </Button>
                             </DialogFooter>

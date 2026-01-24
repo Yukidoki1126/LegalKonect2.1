@@ -28,7 +28,8 @@ import {
     Award,
     TrendingUp,
     Building2,
-    AlertCircle
+    AlertCircle,
+    ChevronDown
 } from 'lucide-react';
 
 export default function DashboardModern() {
@@ -47,6 +48,7 @@ export default function DashboardModern() {
     const [bookingNotes, setBookingNotes] = useState('');
     const [bookingLoading, setBookingLoading] = useState(false);
     const [bookingMessage, setBookingMessage] = useState({ type: '', text: '' });
+    const [showScoreDetails, setShowScoreDetails] = useState(false);
 
     useEffect(() => {
         loadRecommendations();
@@ -221,7 +223,7 @@ export default function DashboardModern() {
             <div className="space-y-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Find Your Legal Assistance</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Find Your Legal Assistance</h1>
                     <p className="text-muted-foreground">
                         Based on your location and legal needs, here are our recommended law firms
                     </p>
@@ -364,49 +366,80 @@ export default function DashboardModern() {
                 )}
 
                 {/* View Firm Dialog */}
-                <Dialog open={!!viewingFirm} onOpenChange={() => { setViewingFirm(null); setViewingData(null); }}>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <Building2 className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <div>
-                                        <DialogTitle className="text-2xl">{viewingFirm?.firm_name}</DialogTitle>
-                                        <DialogDescription>
-                                            Comprehensive law firm profile
-                                        </DialogDescription>
-                                    </div>
-                                </div>
-                                {viewingFirm && viewingData && (() => {
-                                    const rec = recommendations.find(r => r.law_firm.id === viewingFirm.id);
-                                    if (rec) {
-                                        const matchScore = calculateMatchScore(rec);
-                                        return (
-                                            <div className={`px-3 py-2 rounded-lg text-sm font-semibold border ${getMatchScoreColor(matchScore)}`}>
-                                                {matchScore}% Match
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                })()}
-                            </div>
-                        </DialogHeader>
-
-                        {viewingFirm && viewingData && (
-                            <div className="space-y-6">
-                                {/* Rating & Stats Cards */}
-                                <div className="grid grid-cols-3 gap-4">
-                                    <Card>
-                                        <CardContent className="pt-6">
-                                            <div className="text-center">
-                                                <div className="flex justify-center mb-2">
-                                                    {renderStars(Math.round(viewingData.average_rating))}
+                <Dialog open={!!viewingFirm} onOpenChange={() => { setViewingFirm(null); setViewingData(null); setShowScoreDetails(false); }}>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0">
+                        {viewingFirm && (
+                            <>
+                                {/* Scrollable Content including Cover Photo */}
+                                <div className="overflow-y-auto max-h-[calc(90vh-5rem)]">
+                                    {/* Cover Photo Banner */}
+                                    <div className="relative h-48 overflow-hidden">
+                                        {viewingFirm.profile_image_url ? (
+                                            // Display uploaded cover photo
+                                            <img 
+                                                src={viewingFirm.profile_image_url} 
+                                                alt={`${viewingFirm.firm_name} cover`}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    // Fallback to gradient if image fails to load
+                                                    e.currentTarget.style.display = 'none';
+                                                    e.currentTarget.parentElement!.classList.add('bg-gradient-to-r', 'from-primary', 'via-primary/80', 'to-primary/60');
+                                                }}
+                                            />
+                                        ) : (
+                                            // Fallback gradient with pattern
+                                            <div className="w-full h-full bg-gradient-to-r from-primary via-primary/80 to-primary/60">
+                                                <div className="absolute inset-0 opacity-10">
+                                                    <div className="absolute inset-0" style={{
+                                                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                                                    }}></div>
                                                 </div>
-                                                <p className="text-2xl font-bold">
-                                                    {viewingData.average_rating.toFixed(1)}
-                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Content with padding */}
+                                    <div className="px-6 pb-6">
+                                        {/* Firm Name and Description Header */}
+                                        <div className="pt-6 pb-4 border-b">
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div>
+                                                    <DialogTitle className="text-2xl font-bold text-foreground mb-1">
+                                                        {viewingFirm.firm_name}
+                                                    </DialogTitle>
+                                                    <DialogDescription className="text-base">
+                                                        Comprehensive law firm profile
+                                                    </DialogDescription>
+                                                </div>
+                                                {/* Match Score Badge */}
+                                                {viewingData && (() => {
+                                                    const rec = recommendations.find(r => r.law_firm.id === viewingFirm.id);
+                                                    if (rec) {
+                                                        const matchScore = calculateMatchScore(rec);
+                                                        return (
+                                                            <div className={`px-4 py-2 rounded-full text-sm font-bold border ${getMatchScoreColor(matchScore)}`}>
+                                                                {matchScore}% Match
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                })()}
+                                            </div>
+                                        </div>
+
+                                    {viewingData && (
+                                        <div className="space-y-6 pt-4">
+                                            {/* Rating & Stats Cards */}
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <Card>
+                                                    <CardContent className="pt-6">
+                                                        <div className="text-center">
+                                                            <div className="flex justify-center mb-2">
+                                                                {renderStars(Math.round(viewingData.average_rating))}
+                                                            </div>
+                                                            <p className="text-2xl font-bold text-foreground">
+                                                                {viewingData.average_rating.toFixed(1)}
+                                                            </p>
                                                 <p className="text-xs text-muted-foreground">Average Rating</p>
                                             </div>
                                         </CardContent>
@@ -442,41 +475,141 @@ export default function DashboardModern() {
                                         const totalPreferences = user.client.specializations.length;
                                         const specializationPercent = Math.round((specializationMatch / totalPreferences) * 100);
                                         
+                                        // Calculate individual component scores
+                                        const specializationPoints = Math.round((specializationMatch / totalPreferences) * 40);
+                                        
+                                        let distancePoints = 0;
+                                        if (viewingData.distance_km !== null) {
+                                            if (viewingData.distance_km <= 5) distancePoints = 20;
+                                            else if (viewingData.distance_km <= 10) distancePoints = 16;
+                                            else if (viewingData.distance_km <= 20) distancePoints = 12;
+                                            else if (viewingData.distance_km <= 50) distancePoints = 8;
+                                            else distancePoints = 4;
+                                        } else {
+                                            distancePoints = 10;
+                                        }
+                                        
+                                        const ratingPoints = viewingData.average_rating > 0 
+                                            ? Math.round((viewingData.average_rating / 5) * 25) 
+                                            : 12.5;
+                                        
+                                        let experiencePoints = 0;
+                                        if (viewingData.rating_count >= 50) experiencePoints = 15;
+                                        else if (viewingData.rating_count >= 20) experiencePoints = 12;
+                                        else if (viewingData.rating_count >= 10) experiencePoints = 9;
+                                        else if (viewingData.rating_count >= 5) experiencePoints = 6;
+                                        else if (viewingData.rating_count > 0) experiencePoints = 3;
+                                        else experiencePoints = 7.5;
+                                        
                                         return (
                                             <Card className="border-primary/20 bg-primary/5">
-                                                <CardHeader>
-                                                    <CardTitle className="text-base flex items-center gap-2">
-                                                        <TrendingUp className="h-4 w-4" />
-                                                        Match Score Breakdown
+                                                <CardHeader className="pb-3">
+                                                    <CardTitle className="text-base flex items-center justify-between">
+                                                        <span className="flex items-center gap-2">
+                                                            <TrendingUp className="h-4 w-4" />
+                                                            Match Score Breakdown
+                                                        </span>
+                                                        <span className="text-2xl font-bold text-primary">{matchScore}%</span>
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="space-y-3">
+                                                <CardContent className="space-y-4">
+                                                    {/* Overall Score Bar */}
                                                     <div className="space-y-2">
                                                         <div className="flex justify-between text-sm">
-                                                            <span className="text-muted-foreground">Specialization Match</span>
-                                                            <span className="font-medium">{specializationMatch}/{totalPreferences} ({specializationPercent}%)</span>
+                                                            <span className="text-muted-foreground font-medium">Overall Match Score</span>
+                                                            <span className="font-bold text-foreground">{matchScore}/100</span>
                                                         </div>
-                                                        <div className="w-full bg-muted rounded-full h-2">
+                                                        <div className="w-full bg-muted rounded-full h-3">
                                                             <div 
-                                                                className="bg-primary h-2 rounded-full transition-all" 
-                                                                style={{ width: `${specializationPercent}%` }}
+                                                                className="bg-gradient-to-r from-primary to-primary/80 h-3 rounded-full transition-all" 
+                                                                style={{ width: `${matchScore}%` }}
                                                             />
                                                         </div>
                                                     </div>
-                                                    <div className="grid grid-cols-3 gap-2 pt-2">
-                                                        <div className="text-center p-2 rounded-lg bg-background">
-                                                            <p className="text-xs text-muted-foreground">Distance</p>
-                                                            <p className="text-sm font-semibold">{viewingData.distance_km ? `${viewingData.distance_km}km` : 'N/A'}</p>
+
+                                                    {/* Collapsible Details Button */}
+                                                    <button
+                                                        onClick={() => setShowScoreDetails(!showScoreDetails)}
+                                                        className="w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                                                    >
+                                                        <span>{showScoreDetails ? 'Hide' : 'Show'} Score Components</span>
+                                                        <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showScoreDetails ? 'rotate-180' : ''}`} />
+                                                    </button>
+
+                                                    {/* Collapsible Score Details */}
+                                                    {showScoreDetails && (
+                                                        <div className="border-t pt-3 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                            <p className="text-xs text-muted-foreground font-medium">Score Components:</p>
+                                                            
+                                                            {/* Specialization */}
+                                                            <div className="space-y-1.5">
+                                                                <div className="flex justify-between items-center text-sm">
+                                                                    <span className="text-foreground">Specialization Match</span>
+                                                                    <span className="font-semibold text-foreground">{specializationPoints}/40 pts</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="flex-1 bg-muted rounded-full h-2">
+                                                                        <div 
+                                                                            className="bg-blue-500 h-2 rounded-full transition-all" 
+                                                                            style={{ width: `${(specializationPoints / 40) * 100}%` }}
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-xs text-muted-foreground w-16 text-right">{specializationMatch}/{totalPreferences} match</span>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Distance */}
+                                                            <div className="space-y-1.5">
+                                                                <div className="flex justify-between items-center text-sm">
+                                                                    <span className="text-foreground">Distance</span>
+                                                                    <span className="font-semibold text-foreground">{distancePoints}/20 pts</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="flex-1 bg-muted rounded-full h-2">
+                                                                        <div 
+                                                                            className="bg-green-500 h-2 rounded-full transition-all" 
+                                                                            style={{ width: `${(distancePoints / 20) * 100}%` }}
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-xs text-muted-foreground w-16 text-right">{viewingData.distance_km ? `${viewingData.distance_km}km` : 'N/A'}</span>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Rating */}
+                                                            <div className="space-y-1.5">
+                                                                <div className="flex justify-between items-center text-sm">
+                                                                    <span className="text-foreground">Rating</span>
+                                                                    <span className="font-semibold text-foreground">{Math.round(ratingPoints)}/25 pts</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="flex-1 bg-muted rounded-full h-2">
+                                                                        <div 
+                                                                            className="bg-yellow-500 h-2 rounded-full transition-all" 
+                                                                            style={{ width: `${(ratingPoints / 25) * 100}%` }}
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-xs text-muted-foreground w-16 text-right">{viewingData.average_rating.toFixed(1)}⭐</span>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Experience */}
+                                                            <div className="space-y-1.5">
+                                                                <div className="flex justify-between items-center text-sm">
+                                                                    <span className="text-foreground">Experience</span>
+                                                                    <span className="font-semibold text-foreground">{Math.round(experiencePoints)}/15 pts</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="flex-1 bg-muted rounded-full h-2">
+                                                                        <div 
+                                                                            className="bg-purple-500 h-2 rounded-full transition-all" 
+                                                                            style={{ width: `${(experiencePoints / 15) * 100}%` }}
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-xs text-muted-foreground w-16 text-right">{viewingData.rating_count} reviews</span>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div className="text-center p-2 rounded-lg bg-background">
-                                                            <p className="text-xs text-muted-foreground">Rating</p>
-                                                            <p className="text-sm font-semibold">{viewingData.average_rating.toFixed(1)}⭐</p>
-                                                        </div>
-                                                        <div className="text-center p-2 rounded-lg bg-background">
-                                                            <p className="text-xs text-muted-foreground">Experience</p>
-                                                            <p className="text-sm font-semibold">{viewingData.rating_count} reviews</p>
-                                                        </div>
-                                                    </div>
+                                                    )}
                                                 </CardContent>
                                             </Card>
                                         );
@@ -486,7 +619,7 @@ export default function DashboardModern() {
 
                                 {/* Specializations */}
                                 <div className="space-y-3">
-                                    <Label className="text-base font-semibold">Legal Specializations</Label>
+                                    <Label className="text-base font-semibold text-foreground">Legal Specializations</Label>
                                     <div className="flex flex-wrap gap-2">
                                         {viewingFirm.specializations?.map((s) => {
                                             const rec = recommendations.find(r => r.law_firm.id === viewingFirm.id);
@@ -508,10 +641,10 @@ export default function DashboardModern() {
                                 {/* Description */}
                                 {viewingFirm.description && (
                                     <div className="space-y-3">
-                                        <Label className="text-base font-semibold">About This Firm</Label>
+                                        <Label className="text-base font-semibold text-foreground">About This Firm</Label>
                                         <Card>
                                             <CardContent className="pt-6">
-                                                <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                                                <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">
                                                     {viewingFirm.description}
                                                 </p>
                                             </CardContent>
@@ -519,73 +652,197 @@ export default function DashboardModern() {
                                     </div>
                                 )}
 
+                                {/* Experience and Lawyers */}
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    {/* Experience */}
+                                    {(viewingFirm as any).experience_range && (
+                                        <div className="space-y-3">
+                                            <Label className="text-base font-semibold text-foreground">Years of Experience</Label>
+                                            <Card>
+                                                <CardContent className="pt-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                            <Award className="h-5 w-5 text-primary" />
+                                                        </div>
+                                                        <p className="text-lg font-semibold text-foreground">
+                                                            {(viewingFirm as any).experience_range}
+                                                        </p>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    )}
+
+                                    {/* Lawyers */}
+                                    {(viewingFirm as any).lawyers && (viewingFirm as any).lawyers.length > 0 && (
+                                        <div className="space-y-3">
+                                            <Label className="text-base font-semibold text-foreground">Lawyers at Firm</Label>
+                                            <Card>
+                                                <CardContent className="pt-6">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                            <Building2 className="h-5 w-5 text-primary" />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            {(viewingFirm as any).lawyers.map((lawyer: string, index: number) => (
+                                                                <p key={index} className="text-sm text-foreground">
+                                                                    • {lawyer}
+                                                                </p>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Gallery Photos */}
+                                {(viewingFirm as any).gallery_images_urls && (viewingFirm as any).gallery_images_urls.length > 0 && (
+                                    <div className="space-y-3">
+                                        <Label className="text-base font-semibold text-foreground">Office Gallery</Label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                            {(viewingFirm as any).gallery_images_urls.map((imageUrl: string, index: number) => (
+                                                <div key={index} className="aspect-square rounded-lg overflow-hidden border shadow-sm hover:shadow-md transition-shadow">
+                                                    <img 
+                                                        src={imageUrl} 
+                                                        alt={`${viewingFirm.firm_name} photo ${index + 1}`}
+                                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Contact Information */}
                                 <div className="space-y-3">
-                                    <Label className="text-base font-semibold">Contact Information</Label>
+                                    <Label className="text-base font-semibold text-foreground">Contact Information</Label>
                                     <Card>
                                         <CardContent className="pt-6 space-y-3">
-                                            {viewingFirm.phone && (
-                                                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                        <Phone className="h-5 w-5 text-primary" />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-xs text-muted-foreground">Phone</p>
-                                                        <a href={`tel:${viewingFirm.phone}`} className="text-sm font-medium text-primary hover:underline">
-                                                            {viewingFirm.phone}
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                    <Mail className="h-5 w-5 text-primary" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-xs text-muted-foreground">Email</p>
-                                                    <a href={`mailto:${viewingFirm.user?.email}`} className="text-sm font-medium text-primary hover:underline">
-                                                        {viewingFirm.user?.email}
-                                                    </a>
-                                                </div>
-                                            </div>
-                                            {viewingData.distance_km && (
-                                                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                        <MapPin className="h-5 w-5 text-primary" />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-xs text-muted-foreground">Distance</p>
-                                                        <p className="text-sm font-medium">{viewingData.distance_km} km from your location</p>
-                                                    </div>
-                                                    {viewingFirm.latitude && viewingFirm.longitude && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleGetDirections(viewingFirm.latitude!, viewingFirm.longitude!)}
-                                                        >
-                                                            <Navigation className="h-4 w-4 mr-1" />
-                                                            Directions
-                                                        </Button>
+                                            {/* Contact Person Section */}
+                                            {((viewingFirm as any).contact_person_name || (viewingFirm as any).contact_person_phone || (viewingFirm as any).contact_person_email) && (
+                                                <div className="pb-3 border-b">
+                                                    <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Contact Person</p>
+                                                    
+                                                    {(viewingFirm as any).contact_person_name && (
+                                                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 mb-2">
+                                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                <Building2 className="h-5 w-5 text-primary" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-xs text-muted-foreground">Name</p>
+                                                                <p className="text-sm font-medium text-foreground">
+                                                                    {(viewingFirm as any).contact_person_name}
+                                                                    {(viewingFirm as any).contact_person_role && (
+                                                                        <span className="text-xs text-muted-foreground ml-2">
+                                                                            ({(viewingFirm as any).contact_person_role})
+                                                                        </span>
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {(viewingFirm as any).contact_person_phone && (
+                                                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 mb-2">
+                                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                <Phone className="h-5 w-5 text-primary" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-xs text-muted-foreground">Contact Phone</p>
+                                                                <a href={`tel:${(viewingFirm as any).contact_person_phone}`} className="text-sm font-medium text-primary hover:underline">
+                                                                    {(viewingFirm as any).contact_person_phone}
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {(viewingFirm as any).contact_person_email && (
+                                                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                <Mail className="h-5 w-5 text-primary" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-xs text-muted-foreground">Contact Email</p>
+                                                                <a href={`mailto:${(viewingFirm as any).contact_person_email}`} className="text-sm font-medium text-primary hover:underline">
+                                                                    {(viewingFirm as any).contact_person_email}
+                                                                </a>
+                                                            </div>
+                                                        </div>
                                                     )}
                                                 </div>
                                             )}
+
+                                            {/* Firm Contact Section */}
+                                            <div>
+                                                <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Firm Contact</p>
+                                                {viewingFirm.phone && (
+                                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 mb-2">
+                                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                            <Phone className="h-5 w-5 text-primary" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-xs text-muted-foreground">Firm Phone</p>
+                                                            <a href={`tel:${viewingFirm.phone}`} className="text-sm font-medium text-primary hover:underline">
+                                                                {viewingFirm.phone}
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 mb-2">
+                                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                        <Mail className="h-5 w-5 text-primary" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-xs text-muted-foreground">Firm Email</p>
+                                                        <a href={`mailto:${viewingFirm.user?.email}`} className="text-sm font-medium text-primary hover:underline">
+                                                            {viewingFirm.user?.email}
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                {viewingData.distance_km && (
+                                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                            <MapPin className="h-5 w-5 text-primary" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="text-xs text-muted-foreground">Distance</p>
+                                                            <p className="text-sm font-medium text-foreground">{viewingData.distance_km} km from your location</p>
+                                                        </div>
+                                                        {viewingFirm.latitude && viewingFirm.longitude && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleGetDirections(viewingFirm.latitude!, viewingFirm.longitude!)}
+                                                            >
+                                                                <Navigation className="h-4 w-4 mr-1" />
+                                                                Directions
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </div>
-                            </div>
-                        )}
+                                        </div>
+                                    )}
+                                    </div>
+                                </div>
 
-                        <DialogFooter className="gap-2">
-                            <Button variant="outline" onClick={() => { setViewingFirm(null); setViewingData(null); }}>
-                                Close
-                            </Button>
-                            {viewingFirm && (
-                                <Button onClick={() => { setBookingFirm(viewingFirm); setViewingFirm(null); }} className="gap-2">
-                                    <Calendar className="h-4 w-4" />
-                                    Book Appointment
-                                </Button>
-                            )}
-                        </DialogFooter>
+                                {/* Footer Actions */}
+                                <div className="flex gap-2 justify-end px-6 py-4 border-t bg-muted/30">
+                                    <Button variant="outline" className="text-foreground" onClick={() => { setViewingFirm(null); setViewingData(null); setShowScoreDetails(false); }}>
+                                        Close
+                                    </Button>
+                                    <Button onClick={() => { setBookingFirm(viewingFirm); setViewingFirm(null); setShowScoreDetails(false); }} className="gap-2">
+                                        <Calendar className="h-4 w-4" />
+                                        Book Appointment
+                                    </Button>
+                                </div>
+                            </>
+                        )}
                     </DialogContent>
                 </Dialog>
 
@@ -593,7 +850,7 @@ export default function DashboardModern() {
                 <Dialog open={!!bookingFirm} onOpenChange={() => { setBookingFirm(null); setBookingNotes(''); setBookingMessage({ type: '', text: '' }); }}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
+                            <DialogTitle className="flex items-center gap-2 text-foreground">
                                 <Calendar className="h-5 w-5" />
                                 Request Appointment
                             </DialogTitle>

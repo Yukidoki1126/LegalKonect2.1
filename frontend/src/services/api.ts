@@ -168,6 +168,12 @@ class ApiService {
     async updateLawFirmProfile(data: {
         firm_name?: string;
         description?: string;
+        experience_range?: string;
+        lawyers?: string[];
+        contact_person_name?: string;
+        contact_person_role?: string;
+        contact_person_phone?: string;
+        contact_person_email?: string;
         phone?: string;
         email?: string;
         license_number?: string;
@@ -249,6 +255,22 @@ class ApiService {
         return response.data;
     }
 
+    async uploadLawFirmGalleryImage(file: File): Promise<{ message: string; gallery_images_urls: string[] }> {
+        const formData = new FormData();
+        formData.append('image', file);
+        const response = await this.api.post('/law-firm/profile/gallery', formData, {
+            headers: {
+                'Content-Type': undefined,
+            },
+        });
+        return response.data;
+    }
+
+    async deleteLawFirmGalleryImage(index: number): Promise<{ message: string; gallery_images_urls: string[] }> {
+        const response = await this.api.delete(`/law-firm/profile/gallery/${index}`);
+        return response.data;
+    }
+
     // Admin endpoints
     async getAdminDashboard(): Promise<{ stats: DashboardStats; top_specializations: { name: string; count: number }[] }> {
         const response = await this.api.get('/admin/dashboard');
@@ -300,6 +322,7 @@ class ApiService {
             most_rated: { id: number; firm_name: string; average_rating: number; rating_count: number } | null;
             insights: string[];
         };
+        top_firms: { id: number; firm_name: string; completed_appointments: number }[];
     }> {
         const response = await this.api.get('/admin/analytics/appointments');
         return response.data;

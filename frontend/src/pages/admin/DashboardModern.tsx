@@ -76,7 +76,7 @@ export default function AdminDashboard() {
             <div className="space-y-8">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">System Overview</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">System Overview</h1>
                     <p className="text-muted-foreground mt-2">
                         Monitor and manage your legal platform
                     </p>
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
                             <Users className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats?.total_clients || 0}</div>
+                            <div className="text-2xl font-bold text-foreground">{stats?.total_clients || 0}</div>
                             <p className="text-xs text-muted-foreground mt-1">
                                 +{Math.floor((stats?.total_clients || 0) / 10)} this month
                             </p>
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
                             <Building2 className="h-4 w-4 text-blue-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats?.approved_firms || 0}</div>
+                            <div className="text-2xl font-bold text-foreground">{stats?.approved_firms || 0}</div>
                             <p className="text-xs text-muted-foreground mt-1">
                                 Active law firms
                             </p>
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
                             <Clock className="h-4 w-4 text-yellow-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats?.pending_verifications || 0}</div>
+                            <div className="text-2xl font-bold text-foreground">{stats?.pending_verifications || 0}</div>
                             <p className="text-xs text-muted-foreground mt-1">
                                 Awaiting verification
                             </p>
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats?.total_appointments || 0}</div>
+                            <div className="text-2xl font-bold text-foreground">{stats?.total_appointments || 0}</div>
                             <p className="text-xs text-muted-foreground mt-1">
                                 Total bookings
                             </p>
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
                             <TrendingUp className="h-4 w-4 text-green-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{conversionRate}%</div>
+                            <div className="text-2xl font-bold text-foreground">{conversionRate}%</div>
                             <p className="text-xs text-muted-foreground mt-1">
                                 {stats?.completed_appointments || 0} completed
                             </p>
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
                                                     <Building2 className="h-5 w-5 text-primary" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-medium truncate">{firm.firm_name}</p>
+                                                    <p className="font-medium truncate text-foreground">{firm.firm_name}</p>
                                                     <p className="text-sm text-muted-foreground truncate">
                                                         {firm.user?.email}
                                                     </p>
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
                                                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
                                                             {index + 1}
                                                         </span>
-                                                        <span className="font-medium">{spec.name}</span>
+                                                        <span className="font-medium text-foreground">{spec.name}</span>
                                                     </div>
                                                     <Badge variant="secondary" className="text-xs">
                                                         {spec.count}

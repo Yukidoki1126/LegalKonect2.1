@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Building2, Camera, MapPin, Phone, Mail, FileText, Upload, Trash2, Settings as SettingsIcon, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Building2, Camera, MapPin, Phone, Mail, FileText, Upload, Trash2, Settings as SettingsIcon, X, Image as ImageIcon, Plus, Loader2, Users, Briefcase } from 'lucide-react';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 const libraries: Libraries = ["places"];
@@ -18,6 +20,12 @@ export default function ProfileSettings() {
     const [formData, setFormData] = useState({
         firm_name: '',
         description: '',
+        experience_range: '',
+        lawyers: [] as string[],
+        contact_person_name: '',
+        contact_person_role: '',
+        contact_person_phone: '',
+        contact_person_email: '',
         phone: '',
         email: '',
         address: '',
@@ -26,15 +34,21 @@ export default function ProfileSettings() {
         specialization_ids: [] as number[],
     });
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+    const [galleryImages, setGalleryImages] = useState<string[]>([]);
     const [specializations, setSpecializations] = useState<Specialization[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadingGallery, setUploadingGallery] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [showMapModal, setShowMapModal] = useState(false);
+    const [showGalleryModal, setShowGalleryModal] = useState(false);
+    const [galleryModalContent, setGalleryModalContent] = useState({ type: '', title: '', message: '' });
+    const [newLawyer, setNewLawyer] = useState('');
 
     const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const galleryInputRef = useRef<HTMLInputElement | null>(null);
 
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
@@ -57,6 +71,12 @@ export default function ProfileSettings() {
             setFormData({
                 firm_name: profile.firm_name,
                 description: profile.description || '',
+                experience_range: (profile as any).experience_range || '',
+                lawyers: (profile as any).lawyers || [],
+                contact_person_name: (profile as any).contact_person_name || '',
+                contact_person_role: (profile as any).contact_person_role || '',
+                contact_person_phone: (profile as any).contact_person_phone || '',
+                contact_person_email: (profile as any).contact_person_email || '',
                 phone: profile.phone || '',
                 email: profile.email || '',
                 address: profile.address || '',
@@ -65,6 +85,7 @@ export default function ProfileSettings() {
                 specialization_ids: profile.specializations?.map(s => s.id) || [],
             });
             setProfileImageUrl((profile as unknown as { profile_image_url: string | null }).profile_image_url);
+            setGalleryImages((profile as unknown as { gallery_images_urls: string[] }).gallery_images_urls || []);
             setSpecializations(specs);
         } catch {
             console.error('Failed to load profile data');
@@ -102,7 +123,7 @@ export default function ProfileSettings() {
             const img = new Image();
             img.onload = () => {
                 setProfileImageUrl(imageUrlWithTimestamp);
-                setMessage({ type: 'success', text: 'Profile image uploaded successfully!' });
+                setMessage({ type: 'success', text: 'Firm image uploaded successfully!' });
                 setUploadingImage(false);
             };
             img.onerror = () => {
@@ -121,17 +142,101 @@ export default function ProfileSettings() {
     };
 
     const handleImageDelete = async () => {
-        if (!confirm('Are you sure you want to remove the profile image?')) return;
+        if (!confirm('Are you sure you want to remove the firm image?')) return;
 
         setUploadingImage(true);
         try {
             await api.deleteLawFirmProfileImage();
             setProfileImageUrl(null);
-            setMessage({ type: 'success', text: 'Profile image removed successfully!' });
+            setMessage({ type: 'success', text: 'Firm image removed successfully!' });
         } catch {
             setMessage({ type: 'error', text: 'Failed to remove image.' });
         } finally {
             setUploadingImage(false);
+        }
+    };
+
+    const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            setGalleryModalContent({
+                type: 'error',
+                title: 'File Too Large',
+                message: 'Image must be less than 5MB. Please choose a smaller file.'
+            });
+            setShowGalleryModal(true);
+            if (galleryInputRef.current) {
+                galleryInputRef.current.value = '';
+            }
+            return;
+        }
+
+        // Validate file type
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            setGalleryModalContent({
+                type: 'error',
+                title: 'Invalid File Type',
+                message: 'Only JPG, PNG, and WebP images are allowed.'
+            });
+            setShowGalleryModal(true);
+            if (galleryInputRef.current) {
+                galleryInputRef.current.value = '';
+            }
+            return;
+        }
+
+        setUploadingGallery(true);
+
+        try {
+            const response = await api.uploadLawFirmGalleryImage(file);
+            setGalleryImages(response.gallery_images_urls);
+            setGalleryModalContent({
+                type: 'success',
+                title: 'Success!',
+                message: 'Gallery image uploaded successfully!'
+            });
+            setShowGalleryModal(true);
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            setGalleryModalContent({
+                type: 'error',
+                title: 'Upload Failed',
+                message: err.response?.data?.message || 'Failed to upload image. Please try again.'
+            });
+            setShowGalleryModal(true);
+        } finally {
+            setUploadingGallery(false);
+            if (galleryInputRef.current) {
+                galleryInputRef.current.value = '';
+            }
+        }
+    };
+
+    const handleGalleryDelete = async (index: number) => {
+        if (!confirm('Are you sure you want to remove this photo?')) return;
+
+        setUploadingGallery(true);
+        try {
+            const response = await api.deleteLawFirmGalleryImage(index);
+            setGalleryImages(response.gallery_images_urls);
+            setGalleryModalContent({
+                type: 'success',
+                title: 'Deleted!',
+                message: 'Gallery image removed successfully!'
+            });
+            setShowGalleryModal(true);
+        } catch {
+            setGalleryModalContent({
+                type: 'error',
+                title: 'Delete Failed',
+                message: 'Failed to remove image. Please try again.'
+            });
+            setShowGalleryModal(true);
+        } finally {
+            setUploadingGallery(false);
         }
     };
 
@@ -187,6 +292,23 @@ export default function ProfileSettings() {
         }));
     };
 
+    const handleAddLawyer = () => {
+        if (newLawyer.trim()) {
+            setFormData(prev => ({
+                ...prev,
+                lawyers: [...prev.lawyers, newLawyer.trim()]
+            }));
+            setNewLawyer('');
+        }
+    };
+
+    const handleRemoveLawyer = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            lawyers: prev.lawyers.filter((_, i) => i !== index)
+        }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
@@ -197,6 +319,12 @@ export default function ProfileSettings() {
             await api.updateLawFirmProfile({
                 firm_name: formData.firm_name,
                 description: formData.description,
+                experience_range: formData.experience_range,
+                lawyers: formData.lawyers,
+                contact_person_name: formData.contact_person_name,
+                contact_person_role: formData.contact_person_role,
+                contact_person_phone: formData.contact_person_phone,
+                contact_person_email: formData.contact_person_email,
                 phone: formData.phone,
                 email: formData.email,
                 specialization_ids: formData.specialization_ids,
@@ -224,7 +352,7 @@ export default function ProfileSettings() {
             <div className="space-y-8 p-6">
                 {/* Header */}
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2 text-foreground">
                         <SettingsIcon className="h-8 w-8" />
                         Profile Settings
                     </h1>
@@ -242,65 +370,6 @@ export default function ProfileSettings() {
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Profile Image Section */}
-                        <Card className="hover:shadow-md transition-shadow">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Camera className="h-5 w-5" />
-                                    Profile Image
-                                </CardTitle>
-                                <CardDescription>
-                                    Upload an image of your office or firm (max 5MB, JPG/PNG/WebP)
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-6">
-                                    <div className="h-32 w-32 rounded-lg border-2 border-dashed border-border overflow-hidden flex items-center justify-center bg-muted">
-                                        {profileImageUrl ? (
-                                            <img 
-                                                src={profileImageUrl} 
-                                                alt="Firm profile" 
-                                                className="h-full w-full object-cover"
-                                                key={profileImageUrl} // Force re-render when URL changes
-                                            />
-                                        ) : (
-                                            <Building2 className="h-16 w-16 text-muted-foreground" />
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            onChange={handleImageUpload}
-                                            accept="image/jpeg,image/png,image/webp"
-                                            style={{ display: 'none' }}
-                                            id="profile-image-input"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            disabled={uploadingImage}
-                                        >
-                                            <Upload className="mr-2 h-4 w-4" />
-                                            {uploadingImage ? 'Uploading...' : (profileImageUrl ? 'Change Image' : 'Upload Image')}
-                                        </Button>
-                                        {profileImageUrl && (
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                onClick={handleImageDelete}
-                                                disabled={uploadingImage}
-                                            >
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Remove
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
                         {/* Firm Information Section */}
                         <Card className="hover:shadow-md transition-shadow">
                             <CardHeader>
@@ -408,8 +477,282 @@ export default function ProfileSettings() {
                                         placeholder="Describe your firm, expertise, and services..."
                                     />
                                 </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="experience_range" className="flex items-center gap-2">
+                                        <Briefcase className="h-4 w-4" />
+                                        Years of Experience
+                                    </Label>
+                                    <Select
+                                        value={formData.experience_range}
+                                        onValueChange={(value) => setFormData(prev => ({ ...prev, experience_range: value }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select experience range" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="0-2 years">0-2 years</SelectItem>
+                                            <SelectItem value="3-5 years">3-5 years</SelectItem>
+                                            <SelectItem value="5-8 years">5-8 years</SelectItem>
+                                            <SelectItem value="8-10 years">8-10 years</SelectItem>
+                                            <SelectItem value="10-15 years">10-15 years</SelectItem>
+                                            <SelectItem value="15+ years">15+ years</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="lawyers" className="flex items-center gap-2">
+                                        <Users className="h-4 w-4" />
+                                        Lawyers at Firm
+                                    </Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="lawyers"
+                                            value={newLawyer}
+                                            onChange={(e) => setNewLawyer(e.target.value)}
+                                            placeholder="Enter lawyer name"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    handleAddLawyer();
+                                                }
+                                            }}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleAddLawyer}
+                                        >
+                                            Add
+                                        </Button>
+                                    </div>
+                                    {formData.lawyers.length > 0 && (
+                                        <div className="mt-2 space-y-2">
+                                            {formData.lawyers.map((lawyer, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center justify-between p-2 bg-muted rounded-md"
+                                                >
+                                                    <span className="text-sm text-foreground">{lawyer}</span>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleRemoveLawyer(index)}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
+
+                        {/* Contact Person Section */}
+                        <Card className="hover:shadow-md transition-shadow">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Users className="h-5 w-5" />
+                                    Contact Person Information
+                                </CardTitle>
+                                <CardDescription>
+                                    Information for the primary contact at your firm (secretary or staff)
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="contact_person_name">Contact Person Name</Label>
+                                        <Input
+                                            id="contact_person_name"
+                                            name="contact_person_name"
+                                            value={formData.contact_person_name}
+                                            onChange={handleChange}
+                                            placeholder="Enter contact person name"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="contact_person_role">Role/Position</Label>
+                                        <Input
+                                            id="contact_person_role"
+                                            name="contact_person_role"
+                                            value={formData.contact_person_role}
+                                            onChange={handleChange}
+                                            placeholder="e.g., Secretary, Legal Assistant"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="contact_person_phone" className="flex items-center gap-2">
+                                            <Phone className="h-4 w-4" />
+                                            Contact Phone
+                                        </Label>
+                                        <Input
+                                            id="contact_person_phone"
+                                            name="contact_person_phone"
+                                            type="tel"
+                                            value={formData.contact_person_phone}
+                                            onChange={handleChange}
+                                            placeholder="Enter contact phone"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="contact_person_email" className="flex items-center gap-2">
+                                            <Mail className="h-4 w-4" />
+                                            Contact Email
+                                        </Label>
+                                        <Input
+                                            id="contact_person_email"
+                                            name="contact_person_email"
+                                            type="email"
+                                            value={formData.contact_person_email}
+                                            onChange={handleChange}
+                                            placeholder="Enter contact email"
+                                        />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Image Sections - Side by Side */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Profile Image Section */}
+                            <Card className="hover:shadow-md transition-shadow">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Camera className="h-5 w-5" />
+                                        Law Firm Image
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Upload a cover image of your office or firm (max 5MB, JPG/PNG/WebP)
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-32 w-32 rounded-lg border-2 border-dashed border-border overflow-hidden flex items-center justify-center bg-muted">
+                                            {profileImageUrl ? (
+                                                <img 
+                                                    src={profileImageUrl} 
+                                                    alt="Firm profile" 
+                                                    className="h-full w-full object-cover"
+                                                    key={profileImageUrl}
+                                                />
+                                            ) : (
+                                                <Building2 className="h-16 w-16 text-muted-foreground" />
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                onChange={handleImageUpload}
+                                                accept="image/jpeg,image/png,image/webp"
+                                                style={{ display: 'none' }}
+                                                id="profile-image-input"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => fileInputRef.current?.click()}
+                                                disabled={uploadingImage}
+                                            >
+                                                <Upload className="mr-2 h-4 w-4" />
+                                                {uploadingImage ? 'Uploading...' : (profileImageUrl ? 'Change Image' : 'Upload Image')}
+                                            </Button>
+                                            {profileImageUrl && (
+                                                <Button
+                                                    type="button"
+                                                    variant="destructive"
+                                                    onClick={handleImageDelete}
+                                                    disabled={uploadingImage}
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Remove
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Law Firm Photos Gallery */}
+                            <Card className="hover:shadow-md transition-shadow">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <ImageIcon className="h-5 w-5" />
+                                        Law Firm Photo's
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Add more photos of your office, team, or facilities (max 5MB each, up to 10 photos)
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        {/* Gallery Grid */}
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                                            {galleryImages.map((imageUrl, index) => (
+                                                <div key={index} className="relative group aspect-square rounded-lg border-2 border-border overflow-hidden">
+                                                    <img 
+                                                        src={imageUrl} 
+                                                        alt={`Firm photo ${index + 1}`} 
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => handleGalleryDelete(index)}
+                                                            disabled={uploadingGallery}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            
+                                            {/* Add Photo Button */}
+                                            {galleryImages.length < 10 && (
+                                                <div 
+                                                    className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all cursor-pointer flex flex-col items-center justify-center gap-2"
+                                                    onClick={() => !uploadingGallery && galleryInputRef.current?.click()}
+                                                    style={{ opacity: uploadingGallery ? 0.6 : 1, pointerEvents: uploadingGallery ? 'none' : 'auto' }}
+                                                >
+                                                    {uploadingGallery ? (
+                                                        <>
+                                                            <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
+                                                            <span className="text-xs text-muted-foreground">Uploading...</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Plus className="h-8 w-8 text-muted-foreground" />
+                                                            <span className="text-xs text-muted-foreground">Add Photo</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        <input
+                                            type="file"
+                                            ref={galleryInputRef}
+                                            onChange={handleGalleryUpload}
+                                            accept="image/jpeg,image/png,image/webp"
+                                            style={{ display: 'none' }}
+                                            id="gallery-image-input"
+                                        />
+                                        
+                                        {galleryImages.length >= 10 && (
+                                            <p className="text-sm text-muted-foreground text-center">
+                                                Maximum of 10 photos reached
+                                            </p>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
 
                         {/* Specializations Section */}
                         <Card className="hover:shadow-md transition-shadow">
@@ -426,7 +769,7 @@ export default function ProfileSettings() {
                                             <Checkbox
                                                 id={`spec-${spec.id}`}
                                                 checked={formData.specialization_ids.includes(spec.id)}
-                                                onCheckedChange={() => handleSpecializationToggle(spec.id)}
+                                                onCheckedChange={() => { handleSpecializationToggle(spec.id); }}
                                             />
                                             <Label
                                                 htmlFor={`spec-${spec.id}`}
@@ -439,8 +782,8 @@ export default function ProfileSettings() {
                                 </div>
                             </CardContent>
                         </Card>
-
-                        {/* Message Banner */}
+                        
+                        {/* Message section */}
                         {message.text && (
                             <div className={`p-4 rounded-lg border ${
                                 message.type === 'success' 
@@ -497,7 +840,7 @@ export default function ProfileSettings() {
                                 {formData.address && (
                                     <div className="p-3 bg-muted rounded-lg">
                                         <p className="text-sm font-medium text-muted-foreground mb-1">Selected Address:</p>
-                                        <p className="text-sm">{formData.address}</p>
+                                        <p className="text-sm text-foreground">{formData.address}</p>
                                     </div>
                                 )}
                                 <div className="flex justify-end gap-2">
@@ -512,6 +855,25 @@ export default function ProfileSettings() {
                         </Card>
                     </div>
                 )}
+
+                {/* Gallery Upload Modal */}
+                <Dialog open={showGalleryModal} onOpenChange={setShowGalleryModal}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className={galleryModalContent.type === 'success' ? 'text-green-600' : 'text-red-600'}>
+                                {galleryModalContent.title}
+                            </DialogTitle>
+                            <DialogDescription className="pt-2">
+                                {galleryModalContent.message}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end">
+                            <Button onClick={() => setShowGalleryModal(false)}>
+                                Close
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
         </LawFirmLayoutNew>
     );

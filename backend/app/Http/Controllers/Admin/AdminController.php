@@ -154,6 +154,7 @@ class AdminController extends Controller
             'monthly_trends' => $this->analyticsService->getMonthlyAppointments(),
             'status_distribution' => $this->analyticsService->getAppointmentStatusDistribution(),
             'descriptive' => $this->analyticsService->getDescriptiveAnalytics(),
+            'top_firms' => $this->analyticsService->getTopPerformingFirms(),
         ]);
     }
 

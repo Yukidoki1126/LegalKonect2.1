@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -14,7 +15,9 @@ import {
     Search,
     Bell,
     User,
-    ChevronDown
+    ChevronDown,
+    Sun,
+    Moon
 } from 'lucide-react';
 
 interface ClientLayoutProps {
@@ -23,6 +26,7 @@ interface ClientLayoutProps {
 
 export default function ClientLayoutNew({ children }: ClientLayoutProps) {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -45,7 +49,7 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                     {/* Logo */}
                     <div className="flex items-center gap-2">
                         <Scale className="h-6 w-6 text-primary" />
-                        <span className="font-bold text-xl">LegalKonect</span>
+                        <span className="font-bold text-xl text-foreground">LegalKonect</span>
                     </div>
 
                     {/* Desktop Navigation - Centered */}
@@ -70,7 +74,21 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                     </div>
 
                     {/* Right side */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        {/* Theme Toggle */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={toggleTheme}
+                            className="hidden md:flex text-foreground"
+                        >
+                            {theme === 'dark' ? (
+                                <Sun className="h-5 w-5" />
+                            ) : (
+                                <Moon className="h-5 w-5" />
+                            )}
+                        </Button>
+
                         {/* User Menu - Desktop */}
                         <div className="hidden md:block relative">
                             <Button
@@ -83,10 +101,10 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                     <User className="h-4 w-4 text-primary" />
                                 </div>
                                 <div className="text-left hidden lg:block">
-                                    <p className="text-sm font-medium">{user?.name}</p>
+                                    <p className="text-sm font-medium text-foreground">{user?.name}</p>
                                     <p className="text-xs text-muted-foreground">Client</p>
                                 </div>
-                                <ChevronDown className="h-4 w-4" />
+                                <ChevronDown className="h-4 w-4 text-foreground" />
                             </Button>
 
                             {/* Dropdown Menu */}
@@ -98,13 +116,13 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                     />
                                     <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50">
                                         <div className="p-3 border-b border-border">
-                                            <p className="text-sm font-medium">{user?.name}</p>
+                                            <p className="text-sm font-medium text-foreground">{user?.name}</p>
                                             <p className="text-xs text-muted-foreground">{user?.email}</p>
                                         </div>
                                         <div className="p-2">
                                             <Button
                                                 variant="ghost"
-                                                className="w-full justify-start gap-2"
+                                                className="w-full justify-start gap-2 text-foreground"
                                                 onClick={() => {
                                                     setUserMenuOpen(false);
                                                     navigate('/client/settings');
@@ -115,7 +133,7 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                             </Button>
                                             <Button
                                                 variant="ghost"
-                                                className="w-full justify-start gap-2"
+                                                className="w-full justify-start gap-2 text-foreground"
                                                 onClick={handleLogout}
                                             >
                                                 <LogOut className="h-4 w-4" />
@@ -174,6 +192,23 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                 </div>
                             </div>
                             <div className="space-y-2">
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start gap-2"
+                                    onClick={toggleTheme}
+                                >
+                                    {theme === 'dark' ? (
+                                        <>
+                                            <Sun className="h-4 w-4" />
+                                            Light Mode
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Moon className="h-4 w-4" />
+                                            Dark Mode
+                                        </>
+                                    )}
+                                </Button>
                                 <Button
                                     variant="outline"
                                     className="w-full justify-start gap-2"

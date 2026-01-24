@@ -14,7 +14,6 @@ import {
     Users,
     Target
 } from 'lucide-react';
-import { Appointment } from '@/types';
 
 export default function Analytics() {
     const [topSpecs, setTopSpecs] = useState<{ name: string; count: number }[]>([]);
@@ -33,10 +32,9 @@ export default function Analytics() {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [dashboardData, appointmentData, appointmentsResponse] = await Promise.all([
+            const [dashboardData, appointmentData] = await Promise.all([
                 api.getAdminDashboard(),
-                api.getAppointmentAnalytics(),
-                api.getAdminAppointments()
+                api.getAppointmentAnalytics()
             ]);
 
             const topSpecsData = Array.isArray(dashboardData.top_specializations)
@@ -49,32 +47,7 @@ export default function Analytics() {
                 insights: []
             };
 
-            // Calculate top firms
-            const appointments = appointmentsResponse.data || [];
-            const firmPerformance: { [key: string]: { id: number; firm_name: string; count: number } } = {};
-
-            appointments.forEach((apt: Appointment) => {
-                if (apt.status === 'completed' && apt.law_firm) {
-                    const firmId = apt.law_firm.id;
-                    if (!firmPerformance[firmId]) {
-                        firmPerformance[firmId] = {
-                            id: firmId,
-                            firm_name: apt.law_firm.firm_name,
-                            count: 0
-                        };
-                    }
-                    firmPerformance[firmId].count++;
-                }
-            });
-
-            const topFirmsData = Object.values(firmPerformance)
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 5)
-                .map(firm => ({
-                    id: firm.id,
-                    firm_name: firm.firm_name,
-                    completed_appointments: firm.count
-                }));
+            const topFirmsData = appointmentData.top_firms || [];
 
             setTopSpecs(topSpecsData);
             setTopFirms(topFirmsData);
@@ -110,7 +83,7 @@ export default function Analytics() {
             <div className="space-y-8">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Analytics & Insights</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Analytics & Insights</h1>
                     <p className="text-muted-foreground mt-2">
                         Platform performance metrics and trends
                     </p>
@@ -132,7 +105,7 @@ export default function Analytics() {
                         <CardContent>
                             {descriptive?.most_performing ? (
                                 <div className="space-y-2">
-                                    <p className="text-2xl font-bold">
+                                    <p className="text-2xl font-bold text-foreground">
                                         {descriptive.most_performing.firm_name}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
@@ -161,7 +134,7 @@ export default function Analytics() {
                         <CardContent>
                             {descriptive?.most_rated ? (
                                 <div className="space-y-2">
-                                    <p className="text-2xl font-bold">
+                                    <p className="text-2xl font-bold text-foreground">
                                         {descriptive.most_rated.firm_name}
                                     </p>
                                     <div className="flex items-center gap-2">
@@ -234,7 +207,7 @@ export default function Analytics() {
                                                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold">
                                                             {index + 1}
                                                         </div>
-                                                        <span className="font-medium">{spec.name}</span>
+                                                        <span className="font-medium text-foreground">{spec.name}</span>
                                                     </div>
                                                     <div className="flex items-center gap-3">
                                                         <Badge variant="secondary">
@@ -295,7 +268,7 @@ export default function Analytics() {
                                                         {index + 1}
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium">{firm.firm_name}</p>
+                                                        <p className="font-medium text-foreground">{firm.firm_name}</p>
                                                         <p className="text-sm text-muted-foreground">
                                                             {firm.completed_appointments} completed appointments
                                                         </p>
@@ -316,7 +289,7 @@ export default function Analytics() {
                     <TabsContent value="insights" className="space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle>AI-Generated Insights</CardTitle>
+                                <CardTitle>Insights</CardTitle>
                                 <CardDescription>
                                     Key observations and recommendations
                                 </CardDescription>
@@ -342,7 +315,7 @@ export default function Analytics() {
                                                         <TrendingUp className="h-4 w-4 text-primary" />
                                                     </div>
                                                 </div>
-                                                <p className="text-sm leading-relaxed">{insight}</p>
+                                                <p className="text-sm leading-relaxed text-foreground">{insight}</p>
                                             </div>
                                         ))}
                                     </div>

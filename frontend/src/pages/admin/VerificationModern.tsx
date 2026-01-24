@@ -90,7 +90,7 @@ export default function Verification() {
             <div className="space-y-8">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Law Firm Verification</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Law Firm Verification</h1>
                     <p className="text-muted-foreground mt-2">
                         Review and approve new law firm registrations
                     </p>
@@ -106,7 +106,7 @@ export default function Verification() {
                             <Clock className="h-4 w-4 text-yellow-500" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{pendingFirms.length}</div>
+                            <div className="text-2xl font-bold text-foreground">{pendingFirms.length}</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -123,7 +123,7 @@ export default function Verification() {
                         {pendingFirms.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-12">
                                 <CheckCircle2 className="h-16 w-16 text-muted-foreground mb-4" />
-                                <p className="text-lg font-medium">All Caught Up!</p>
+                                <p className="text-lg font-medium text-foreground">All Caught Up!</p>
                                 <p className="text-sm text-muted-foreground">
                                     No pending verifications at the moment
                                 </p>
@@ -141,7 +141,7 @@ export default function Verification() {
                                             </div>
                                             <div className="flex-1 min-w-0 space-y-2">
                                                 <div>
-                                                    <p className="font-semibold text-lg">{firm.firm_name}</p>
+                                                    <p className="font-semibold text-lg text-foreground">{firm.firm_name}</p>
                                                     <p className="text-sm text-muted-foreground">
                                                         {firm.user?.name}
                                                     </p>
@@ -237,24 +237,24 @@ export default function Verification() {
                         <div className="space-y-6">
                             {/* Contact Information */}
                             <div>
-                                <h3 className="text-sm font-semibold mb-3">Contact Information</h3>
+                                <h3 className="text-sm font-semibold mb-3 text-foreground">Contact Information</h3>
                                 <div className="grid gap-3">
                                     <div className="flex items-center gap-2 text-sm">
                                         <Mail className="h-4 w-4 text-muted-foreground" />
-                                        <span className="font-medium">Email:</span>
+                                        <span className="font-medium text-foreground">Email:</span>
                                         <span className="text-muted-foreground">{viewingFirm.user?.email}</span>
                                     </div>
                                     {viewingFirm.phone && (
                                         <div className="flex items-center gap-2 text-sm">
                                             <Phone className="h-4 w-4 text-muted-foreground" />
-                                            <span className="font-medium">Phone:</span>
+                                            <span className="font-medium text-foreground">Phone:</span>
                                             <span className="text-muted-foreground">{viewingFirm.phone}</span>
                                         </div>
                                     )}
                                     {viewingFirm.address && (
                                         <div className="flex items-start gap-2 text-sm">
                                             <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                            <span className="font-medium">Address:</span>
+                                            <span className="font-medium text-foreground">Address:</span>
                                             <span className="text-muted-foreground flex-1">{viewingFirm.address}</span>
                                         </div>
                                     )}
@@ -264,7 +264,7 @@ export default function Verification() {
                             {/* License Information */}
                             {viewingFirm.license_number && (
                                 <div>
-                                    <h3 className="text-sm font-semibold mb-3">License Information</h3>
+                                    <h3 className="text-sm font-semibold mb-3 text-foreground">License Information</h3>
                                     <div className="flex items-center gap-2">
                                         <FileText className="h-4 w-4 text-muted-foreground" />
                                         <Badge variant="outline" className="font-mono">
@@ -277,7 +277,7 @@ export default function Verification() {
                             {/* Specializations */}
                             {viewingFirm.specializations && viewingFirm.specializations.length > 0 && (
                                 <div>
-                                    <h3 className="text-sm font-semibold mb-3">Specializations</h3>
+                                    <h3 className="text-sm font-semibold mb-3 text-foreground">Specializations</h3>
                                     <div className="flex flex-wrap gap-2">
                                         {viewingFirm.specializations.map((s) => (
                                             <Badge key={s.id} variant="secondary">
@@ -291,7 +291,7 @@ export default function Verification() {
                             {/* Description */}
                             {viewingFirm.description && (
                                 <div>
-                                    <h3 className="text-sm font-semibold mb-3">About</h3>
+                                    <h3 className="text-sm font-semibold mb-3 text-foreground">About</h3>
                                     <p className="text-sm text-muted-foreground leading-relaxed">
                                         {viewingFirm.description}
                                     </p>

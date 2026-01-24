@@ -82,7 +82,7 @@ export default function Reviews() {
             <div className="space-y-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Client Reviews</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Client Reviews</h1>
                     <p className="text-muted-foreground">
                         Feedback and ratings from your clients
                     </p>
@@ -196,7 +196,7 @@ export default function Reviews() {
                                                     <div className="p-3 rounded-lg bg-muted">
                                                         <div className="flex items-start gap-2">
                                                             <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                                            <p className="text-sm leading-relaxed">
+                                                            <p className="text-sm leading-relaxed text-foreground">
                                                                 {rating.review}
                                                             </p>
                                                         </div>

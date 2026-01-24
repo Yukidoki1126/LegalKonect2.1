@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
     LayoutDashboard,
     FileCheck,
@@ -10,7 +11,9 @@ import {
     Bell,
     Search,
     Menu,
-    FileSearch
+    FileSearch,
+    Sun,
+    Moon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +27,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [pendingCount, setPendingCount] = useState<number>(0);
@@ -84,9 +88,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             )}>
                 <div className="flex flex-col h-full">
                     {/* Logo */}
-                    <div className="flex items-center gap-2 px-6 py-6 border-b border-border">
+                    <div className="flex items-center gap-2 px-8 py-6 border-b border-border">
                         <Scale className="h-8 w-8 text-primary" />
-                        <span className="text-xl font-bold">LegalKonect</span>
+                        <span className="text-xl font-bold text-foreground">LegalKonect</span>
                     </div>
 
                     {/* Navigation */}
@@ -120,13 +124,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                                 {user?.name?.substring(0, 2).toUpperCase() || 'AD'}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">{user?.name || 'Admin'}</p>
+                                <p className="text-sm font-medium truncate text-foreground">{user?.name || 'Admin'}</p>
                                 <p className="text-xs text-muted-foreground">System Administrator</p>
                             </div>
                         </div>
                         <Button
                             variant="outline"
-                            className="w-full"
+                            className="w-full text-foreground"
                             onClick={handleLogout}
                         >
                             <LogOut className="mr-2 h-4 w-4" />
@@ -148,7 +152,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <div className="lg:pl-64">
                 {/* Top Header */}
                 <header className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-                    <div className="flex items-center gap-4 px-6 py-4">
+                    <div className="flex items-center justify-between gap-4 px-8 py-4">
                         {/* Mobile Menu Button */}
                         <Button
                             variant="ghost"
@@ -159,19 +163,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             <Menu className="h-6 w-6" />
                         </Button>
 
-                        {/* Search */}
-                        <div className="flex-1 max-w-md">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    type="search"
-                                    placeholder="Search..."
-                                    className="pl-10"
-                                />
-                            </div>
+                        {/* Spacer for mobile */}
+                        <div className="flex-1 lg:hidden"></div>
+
+                        {/* Right Side Actions */}
+                        <div className="flex items-center gap-2 ml-auto">
+                            {/* Theme Toggle */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={toggleTheme}
+                                className="text-foreground"
+                            >
+                                {theme === 'dark' ? (
+                                    <Sun className="h-5 w-5" />
+                                ) : (
+                                    <Moon className="h-5 w-5" />
+                                )}
+                            </Button>
                         </div>
-
-
                     </div>
                 </header>
 

@@ -190,7 +190,7 @@ export default function SettingsModern() {
             <div className="space-y-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Profile Settings</h1>
                     <p className="text-muted-foreground">
                         Update your personal information and legal interests
                     </p>
@@ -215,7 +215,7 @@ export default function SettingsModern() {
                     {/* Personal Information */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-foreground">
                                 <User className="h-5 w-5" />
                                 Personal Information
                             </CardTitle>
@@ -323,7 +323,7 @@ export default function SettingsModern() {
                     {/* Legal Interests */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-foreground">
                                 <Scale className="h-5 w-5" />
                                 Legal Interests
                             </CardTitle>
@@ -366,7 +366,7 @@ export default function SettingsModern() {
                 <Dialog open={showMapModal} onOpenChange={setShowMapModal}>
                     <DialogContent className="max-w-3xl">
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
+                            <DialogTitle className="flex items-center gap-2 text-foreground">
                                 <MapPin className="h-5 w-5" />
                                 Pin Your Location
                             </DialogTitle>
@@ -396,7 +396,7 @@ export default function SettingsModern() {
 
                                 {formData.address && (
                                     <div className="p-3 rounded-lg bg-muted">
-                                        <p className="text-sm">
+                                        <p className="text-sm text-foreground">
                                             <strong>Selected Address:</strong> {formData.address}
                                         </p>
                                     </div>

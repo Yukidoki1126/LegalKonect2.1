@@ -108,7 +108,7 @@ export default function Calendar() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">Calendar</h1>
                         <p className="text-muted-foreground">
                             View and manage your appointment schedule
                         </p>
@@ -201,7 +201,7 @@ export default function Calendar() {
                                     <Label>Client</Label>
                                     <div className="flex items-center gap-2">
                                         <User className="h-4 w-4 text-muted-foreground" />
-                                        <span>{selectedAppointment.client?.user?.name}</span>
+                                        <span className="text-foreground">{selectedAppointment.client?.user?.name}</span>
                                     </div>
                                 </div>
 
@@ -209,7 +209,7 @@ export default function Calendar() {
                                     <Label>Specialization</Label>
                                     <div className="flex items-center gap-2">
                                         <FileText className="h-4 w-4 text-muted-foreground" />
-                                        <span>{selectedAppointment.specialization?.name || 'General Legal Consultation'}</span>
+                                        <span className="text-foreground">{selectedAppointment.specialization?.name || 'General Legal Consultation'}</span>
                                     </div>
                                 </div>
 
@@ -222,7 +222,7 @@ export default function Calendar() {
                                     <Label>Date & Time</Label>
                                     <div className="flex items-center gap-2">
                                         <Clock className="h-4 w-4 text-muted-foreground" />
-                                        <span>
+                                        <span className="text-foreground">
                                             {new Date(selectedAppointment.scheduled_at.includes('T') ? 
                                                 selectedAppointment.scheduled_at : 
                                                 selectedAppointment.scheduled_at.replace(' ', 'T') + 'Z'
@@ -242,7 +242,7 @@ export default function Calendar() {
                                     <div className="grid gap-2">
                                         <Label>Client's Notes</Label>
                                         <div className="p-3 rounded-lg bg-muted">
-                                            <p className="text-sm whitespace-pre-wrap">
+                                            <p className="text-sm whitespace-pre-wrap text-foreground">
                                                 {selectedAppointment.notes}
                                             </p>
                                         </div>

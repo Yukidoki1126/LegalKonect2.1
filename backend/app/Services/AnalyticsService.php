@@ -245,4 +245,19 @@ class AnalyticsService
             'insights' => $insights,
         ];
     }
+
+    /**
+     * Get top performing law firms by completed appointments
+     */
+    public function getTopPerformingFirms(int $limit = 5): Collection
+    {
+        return LawFirm::query()
+            ->select('law_firms.id', 'law_firms.firm_name', DB::raw('COUNT(appointments.id) as completed_appointments'))
+            ->join('appointments', 'law_firms.id', '=', 'appointments.law_firm_id')
+            ->where('appointments.status', 'completed')
+            ->groupBy('law_firms.id', 'law_firms.firm_name')
+            ->orderByDesc('completed_appointments')
+            ->limit($limit)
+            ->get();
+    }
 }

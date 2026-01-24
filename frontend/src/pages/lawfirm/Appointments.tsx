@@ -182,7 +182,7 @@ export default function Appointments() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">Appointments</h1>
                         <p className="text-muted-foreground">
                             Manage client appointments and consultations
                         </p>
@@ -246,7 +246,7 @@ export default function Appointments() {
                                                     <User className="h-6 w-6 text-primary" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <CardTitle className="text-lg">
+                                                    <CardTitle className="text-lg text-foreground">
                                                         {apt.client?.user?.name || 'Client'}
                                                     </CardTitle>
                                                     <CardDescription className="flex flex-col gap-1 mt-1">
@@ -279,14 +279,14 @@ export default function Appointments() {
                                         {apt.status === 'cancelled' && apt.cancellation_reason && (
                                             <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                                                 <p className="text-sm text-destructive font-medium mb-1">Cancellation Reason:</p>
-                                                <p className="text-sm">{apt.cancellation_reason}</p>
+                                                <p className="text-sm text-foreground">{apt.cancellation_reason}</p>
                                             </div>
                                         )}
 
                                         {apt.notes && (
                                             <div className="mb-4 p-3 rounded-lg bg-muted">
                                                 <p className="text-sm text-muted-foreground font-medium mb-1">Client Notes:</p>
-                                                <p className="text-sm">{apt.notes}</p>
+                                                <p className="text-sm text-foreground">{apt.notes}</p>
                                             </div>
                                         )}
 
@@ -379,7 +379,7 @@ export default function Appointments() {
                                     <Label>Name</Label>
                                     <div className="flex items-center gap-2">
                                         <User className="h-4 w-4 text-muted-foreground" />
-                                        <span>{viewingClient.client?.user?.name}</span>
+                                        <span className="text-foreground">{viewingClient.client?.user?.name}</span>
                                     </div>
                                 </div>
 
@@ -430,7 +430,7 @@ export default function Appointments() {
                                     <div className="grid gap-2">
                                         <Label>Client's Notes</Label>
                                         <div className="p-3 rounded-lg bg-muted">
-                                            <p className="text-sm whitespace-pre-wrap">
+                                            <p className="text-sm whitespace-pre-wrap text-foreground">
                                                 {viewingClient.notes}
                                             </p>
                                         </div>
@@ -449,41 +449,43 @@ export default function Appointments() {
                 <Dialog open={!!showScheduleModal} onOpenChange={() => setShowScheduleModal(null)}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
+                            <DialogTitle className="flex items-center gap-2 text-foreground">
                                 <Calendar className="h-5 w-5" />
                                 Schedule Appointment
                             </DialogTitle>
-                            <DialogDescription>
+                            <DialogDescription className="text-foreground">
                                 Set the date and time for consultation with <strong>{showScheduleModal?.client?.user?.name}</strong>
                             </DialogDescription>
                         </DialogHeader>
 
                         <div className="space-y-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="schedule-date">Date & Time</Label>
+                                <Label className="text-foreground">Date & Time</Label>
                                 <Input
                                     id="schedule-date"
                                     type="datetime-local"
                                     value={scheduleDate}
                                     onChange={(e) => setScheduleDate(e.target.value)}
                                     min={new Date().toISOString().substring(0, 16)}
+                                    className="text-foreground"
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="schedule-notes">Note (Optional)</Label>
+                                <Label htmlFor="schedule-notes" className="text-foreground">Note (Optional)</Label>
                                 <Textarea
                                     id="schedule-notes"
                                     value={scheduleNotes}
                                     onChange={(e) => setScheduleNotes(e.target.value)}
                                     placeholder="Add a note for the client..."
                                     rows={4}
+                                    className="text-foreground"
                                 />
                             </div>
                         </div>
 
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowScheduleModal(null)}>
+                            <Button variant="outline" onClick={() => setShowScheduleModal(null)} className="text-foreground">
                                 Cancel
                             </Button>
                             <Button

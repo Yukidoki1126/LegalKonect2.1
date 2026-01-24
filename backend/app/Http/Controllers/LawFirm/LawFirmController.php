@@ -30,6 +30,13 @@ class LawFirmController extends Controller
         $validated = $request->validate([
             'firm_name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'experience_range' => 'nullable|string',
+            'lawyers' => 'nullable|array',
+            'lawyers.*' => 'string|max:255',
+            'contact_person_name' => 'nullable|string|max:255',
+            'contact_person_role' => 'nullable|string|max:255',
+            'contact_person_phone' => 'nullable|string|max:20',
+            'contact_person_email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'license_number' => 'nullable|string|max:100',
@@ -42,6 +49,8 @@ class LawFirmController extends Controller
         $lawFirm->update([
             'firm_name' => $validated['firm_name'] ?? $lawFirm->firm_name,
             'description' => $validated['description'] ?? $lawFirm->description,
+            'experience_range' => $validated['experience_range'] ?? $lawFirm->experience_range,
+            'lawyers' => $validated['lawyers'] ?? $lawFirm->lawyers,
             'phone' => $validated['phone'] ?? $lawFirm->phone,
             'email' => $validated['email'] ?? $lawFirm->email,
             'license_number' => $validated['license_number'] ?? $lawFirm->license_number,
@@ -300,6 +309,64 @@ class LawFirmController extends Controller
 
         return response()->json([
             'message' => 'Profile image deleted successfully',
+        ]);
+    }
+
+    /**
+     * Upload gallery image
+     */
+    public function uploadGalleryImage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120', // 5MB max
+        ]);
+
+        $lawFirm = $request->user()->lawFirm;
+
+        // Check if already has 10 images
+        $currentImages = $lawFirm->gallery_images ?? [];
+        if (count($currentImages) >= 10) {
+            return response()->json(['message' => 'Maximum of 10 gallery images allowed'], 400);
+        }
+
+        // Generate unique filename
+        $filename = 'law-firms/' . $lawFirm->id . '/gallery/' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+
+        // Upload to R2
+        Storage::disk('r2')->put($filename, file_get_contents($request->file('image')), 'public');
+
+        // Update database - add to array
+        $currentImages[] = $filename;
+        $lawFirm->update(['gallery_images' => $currentImages]);
+
+        return response()->json([
+            'message' => 'Gallery image uploaded successfully',
+            'gallery_images_urls' => $lawFirm->gallery_images_urls,
+        ]);
+    }
+
+    /**
+     * Delete gallery image
+     */
+    public function deleteGalleryImage(Request $request, int $index): JsonResponse
+    {
+        $lawFirm = $request->user()->lawFirm;
+        $currentImages = $lawFirm->gallery_images ?? [];
+
+        if (!isset($currentImages[$index])) {
+            return response()->json(['message' => 'Image not found'], 404);
+        }
+
+        // Delete from R2
+        Storage::disk('r2')->delete($currentImages[$index]);
+
+        // Remove from array
+        array_splice($currentImages, $index, 1);
+        $lawFirm->update(['gallery_images' => array_values($currentImages)]);
+
+        return response()->json([
+            'message' => 'Gallery image deleted successfully',
+            'gallery_images_urls' => $lawFirm->gallery_images_urls,
         ]);
     }
 }

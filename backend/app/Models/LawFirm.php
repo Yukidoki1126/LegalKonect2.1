@@ -17,6 +17,12 @@ class LawFirm extends Model
         'firm_name',
         'license_number',
         'description',
+        'experience_range',
+        'lawyers',
+        'contact_person_name',
+        'contact_person_role',
+        'contact_person_phone',
+        'contact_person_email',
         'phone',
         'email',
         'address',
@@ -26,15 +32,18 @@ class LawFirm extends Model
         'rejection_reason',
         'verified_at',
         'profile_image',
+        'gallery_images',
     ];
 
     protected $casts = [
         'latitude' => 'float',
         'longitude' => 'float',
         'verified_at' => 'datetime',
+        'gallery_images' => 'array',
+        'lawyers' => 'array',
     ];
 
-    protected $appends = ['profile_image_url'];
+    protected $appends = ['profile_image_url', 'gallery_images_urls'];
 
     public function getProfileImageUrlAttribute(): ?string
     {
@@ -43,6 +52,18 @@ class LawFirm extends Model
         }
 
         return config('filesystems.disks.r2.url') . '/' . $this->profile_image;
+    }
+
+    public function getGalleryImagesUrlsAttribute(): array
+    {
+        if (!$this->gallery_images || !is_array($this->gallery_images)) {
+            return [];
+        }
+
+        return array_map(
+            fn($path) => config('filesystems.disks.r2.url') . '/' . $path,
+            $this->gallery_images
+        );
     }
 
     public function user(): BelongsTo
