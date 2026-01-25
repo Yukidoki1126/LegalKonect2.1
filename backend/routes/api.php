@@ -19,6 +19,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/register/client', [AuthController::class, 'registerClient']);
     Route::post('/register/law-firm', [AuthController::class, 'registerLawFirm']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
 // Public specializations list
@@ -38,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/user', [AuthController::class, 'user']);
+    Route::put('/auth/change-password', [AuthController::class, 'changePassword']);
 
     // Client routes
     Route::middleware('role:client')->prefix('client')->group(function () {
