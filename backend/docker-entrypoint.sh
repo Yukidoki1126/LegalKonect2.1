@@ -1,14 +1,15 @@
 #!/bin/bash
 set -e
 
-# Create SQLite database if it doesn't exist
-if [ ! -f /var/data/database/database.sqlite ]; then
-    touch /var/data/database/database.sqlite
-    echo "Created new SQLite database"
-fi
-
 # Run migrations
 php artisan migrate --force
+
+# Seed database only if APP_ENV is production and SEED_ON_DEPLOY is true
+if [ "$SEED_ON_DEPLOY" = "true" ]; then
+    echo "Seeding database..."
+    php artisan db:seed --class=ComprehensiveSeeder --force
+    echo "Database seeded successfully!"
+fi
 
 # Cache configuration
 php artisan config:cache
