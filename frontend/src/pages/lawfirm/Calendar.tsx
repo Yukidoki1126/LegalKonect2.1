@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '@/services/api';
 import { CalendarEvent, Appointment } from '@/types';
 import LawFirmLayoutNew from '@/components/lawfirm/LawFirmLayoutNew';
@@ -23,37 +23,62 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Calendar() {
     const navigate = useNavigate();
+    const calendarRef = useRef<any>(null);
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+    const [currentView, setCurrentView] = useState('dayGridMonth');
 
-    const loadData = useCallback(async () => {
-        setLoading(true);
+    const loadData = useCallback(async (isInitialLoad = false) => {
+        if (isInitialLoad) {
+            setLoading(true);
+        }
         try {
             const appointmentsData = await api.getLawFirmAppointments();
             setAppointments(appointmentsData);
 
-            const events: CalendarEvent[] = appointmentsData.map((apt: Appointment) => ({
-                id: apt.id.toString(),
-                title: apt.client?.user?.name || 'Client',
-                start: apt.scheduled_at.includes('T') ? apt.scheduled_at : apt.scheduled_at.replace(' ', 'T') + 'Z',
-                end: new Date(new Date(apt.scheduled_at.includes('T') ? apt.scheduled_at : apt.scheduled_at.replace(' ', 'T') + 'Z').getTime() + (apt.duration_minutes || 60) * 60000).toISOString(),
-                status: apt.status,
-                color: getStatusColor(apt.status),
-                textColor: '#ffffff',
-                extendedProps: { appointment: apt },
-            }));
+            const events: CalendarEvent[] = appointmentsData.map((apt: Appointment) => {
+                const startDate = new Date(apt.scheduled_at.includes('T') ? apt.scheduled_at : apt.scheduled_at.replace(' ', 'T') + 'Z');
+                const endDate = new Date(startDate.getTime() + (apt.duration_minutes || 60) * 60000);
+                
+                // Cap event end time to not extend past midnight (next day)
+                const startDayEnd = new Date(startDate);
+                startDayEnd.setHours(23, 59, 59, 999);
+                
+                const cappedEndDate = endDate > startDayEnd ? startDayEnd : endDate;
+                
+                return {
+                    id: apt.id.toString(),
+                    title: apt.client?.user?.name || 'Client',
+                    start: startDate.toISOString(),
+                    end: cappedEndDate.toISOString(),
+                    status: apt.status,
+                    color: '#22c55e',
+                    borderColor: '#22c55e',
+                    textColor: '#ffffff',
+                    extendedProps: { appointment: apt },
+                };
+            });
             setCalendarEvents(events);
         } catch {
             console.error('Failed to load calendar data');
         } finally {
-            setLoading(false);
+            if (isInitialLoad) {
+                setLoading(false);
+            }
         }
     }, []);
 
     useEffect(() => {
-        loadData();
+        loadData(true);
+
+        // Silent auto-refresh every 15 seconds - updates data without resetting view
+        const refreshInterval = setInterval(() => {
+            loadData(false);
+        }, 15000);
+
+        return () => clearInterval(refreshInterval);
     }, [loadData]);
 
     const getStatusColor = (status: string) => {
@@ -149,10 +174,116 @@ export default function Calendar() {
                 {/* Calendar */}
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="calendar-wrapper">
+                        <div className="calendar-wrapper" key="calendar-container">
+                            <style>{`
+                                /* Base event styling */
+                                .fc-event {
+                                    cursor: pointer;
+                                    border-radius: 3px;
+                                }
+                                
+                                /* Month view - compact events */
+                                .fc-daygrid-event {
+                                    background-color: #22c55e !important;
+                                    border: 1px solid #16a34a !important;
+                                    border-radius: 3px !important;
+                                    margin-bottom: 2px !important;
+                                    padding: 0 !important;
+                                }
+                                
+                                .fc-daygrid-event-harness {
+                                    margin-top: 0 !important;
+                                    margin-bottom: 2px !important;
+                                }
+                                
+                                .fc-daygrid-block-event {
+                                    padding: 2px 4px !important;
+                                    font-size: 0.7rem !important;
+                                }
+                                
+                                .fc-daygrid-block-event .fc-event-time {
+                                    font-size: 0.65rem !important;
+                                    font-weight: 600 !important;
+                                }
+                                
+                                .fc-daygrid-block-event .fc-event-title {
+                                    font-size: 0.65rem !important;
+                                }
+                                
+                                /* More link styling */
+                                .fc-daygrid-more-link {
+                                    font-size: 0.7rem !important;
+                                    color: #3b82f6 !important;
+                                    font-weight: 600 !important;
+                                    cursor: pointer !important;
+                                    margin-top: 2px !important;
+                                    padding: 2px !important;
+                                    text-align: center !important;
+                                    display: block !important;
+                                }
+                                
+                                /* Day cell sizing */
+                                .fc-daygrid-day-frame {
+                                    min-height: 100px !important;
+                                    position: relative;
+                                }
+                                
+                                .fc-daygrid-day-events {
+                                    margin-bottom: 0 !important;
+                                }
+                                
+                                .fc-daygrid-day-bottom {
+                                    margin-top: 2px !important;
+                                }
+                                
+                                /* Week/Day view - time grid events */
+                                .fc-timegrid-event {
+                                    background-color: #22c55e !important;
+                                    border-color: #16a34a !important;
+                                    border-radius: 3px !important;
+                                    font-size: 0.7rem !important;
+                                    min-height: 40px !important;
+                                }
+                                
+                                .fc-timegrid-event .fc-event-main {
+                                    padding: 2px 4px !important;
+                                }
+                                
+                                .fc-timegrid-event .fc-event-time {
+                                    font-size: 0.6rem !important;
+                                    font-weight: 600 !important;
+                                }
+                                
+                                .fc-timegrid-event .fc-event-title {
+                                    font-size: 0.6rem !important;
+                                    overflow: hidden !important;
+                                    text-overflow: ellipsis !important;
+                                }
+                                
+                                /* Compact time slots */
+                                .fc-timegrid-slot {
+                                    height: 2.5em !important;
+                                }
+                                
+                                /* Hide end times on short events */
+                                .fc-timegrid-event-short .fc-event-time {
+                                    display: block !important;
+                                }
+                                
+                                /* Popover for "more" events */
+                                .fc-popover {
+                                    z-index: 9999 !important;
+                                }
+                                
+                                .fc-popover-body {
+                                    max-height: 300px;
+                                    overflow-y: auto;
+                                }
+                            `}</style>
                             <FullCalendar
+                                ref={calendarRef}
                                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                                initialView="dayGridMonth"
+                                initialView={currentView}
                                 headerToolbar={{
                                     left: 'prev,next today',
                                     center: 'title',
@@ -160,20 +291,59 @@ export default function Calendar() {
                                 }}
                                 events={calendarEvents}
                                 height="auto"
+                                dayMaxEvents={2}
+                                displayEventEnd={false}
+                                nextDayThreshold="09:00:00"
+                                slotEventOverlap={false}
+                                eventMaxStack={3}
                                 eventTimeFormat={{
                                     hour: 'numeric',
                                     minute: '2-digit',
                                     meridiem: 'short',
                                 }}
+                                datesSet={(dateInfo) => {
+                                    setCurrentView(dateInfo.view.type);
+                                }}
                                 eventContent={(eventInfo) => {
                                     const timeText = eventInfo.timeText.toUpperCase();
+                                    const title = eventInfo.event.title;
+                                    const viewType = eventInfo.view.type;
+                                    
+                                    // Truncate based on view
+                                    let displayTitle = title;
+                                    if (viewType === 'dayGridMonth' && title.length > 8) {
+                                        displayTitle = title.substring(0, 8) + '...';
+                                    } else if (viewType === 'timeGridWeek' && title.length > 10) {
+                                        displayTitle = title.substring(0, 10) + '...';
+                                    } else if (viewType === 'timeGridDay' && title.length > 20) {
+                                        displayTitle = title.substring(0, 20) + '...';
+                                    }
+                                    
                                     return (
-                                        <>
-                                            <div className="fc-event-time">{timeText}</div>
-                                            <div className="fc-event-title">{eventInfo.event.title}</div>
-                                        </>
+                                        <div style={{ 
+                                            overflow: 'hidden',
+                                            padding: '1px 2px',
+                                            lineHeight: '1.2'
+                                        }}>
+                                            <div style={{ 
+                                                fontSize: '0.65rem',
+                                                fontWeight: 600,
+                                                whiteSpace: 'nowrap'
+                                            }}>
+                                                {timeText}
+                                            </div>
+                                            <div style={{ 
+                                                fontSize: '0.65rem',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}>
+                                                {displayTitle}
+                                            </div>
+                                        </div>
                                     );
                                 }}
+                                moreLinkText={(num) => `+${num} more`}
                                 eventClick={(info) => {
                                     setSelectedAppointment(info.event.extendedProps.appointment);
                                 }}
@@ -184,13 +354,13 @@ export default function Calendar() {
 
                 {/* Appointment Details Dialog */}
                 <Dialog open={!!selectedAppointment} onOpenChange={() => setSelectedAppointment(null)}>
-                    <DialogContent>
+                    <DialogContent className="text-foreground">
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
+                            <DialogTitle className="flex items-center gap-2 text-foreground">
                                 <CalendarIcon className="h-5 w-5" />
                                 Appointment Details
                             </DialogTitle>
-                            <DialogDescription>
+                            <DialogDescription className="text-foreground/70">
                                 View consultation information
                             </DialogDescription>
                         </DialogHeader>
@@ -198,7 +368,7 @@ export default function Calendar() {
                         {selectedAppointment && (
                             <div className="space-y-4">
                                 <div className="grid gap-2">
-                                    <Label>Client</Label>
+                                    <Label className="text-foreground">Client</Label>
                                     <div className="flex items-center gap-2">
                                         <User className="h-4 w-4 text-muted-foreground" />
                                         <span className="text-foreground">{selectedAppointment.client?.user?.name}</span>
@@ -206,7 +376,7 @@ export default function Calendar() {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Specialization</Label>
+                                    <Label className="text-foreground">Specialization</Label>
                                     <div className="flex items-center gap-2">
                                         <FileText className="h-4 w-4 text-muted-foreground" />
                                         <span className="text-foreground">{selectedAppointment.specialization?.name || 'General Legal Consultation'}</span>
@@ -214,12 +384,12 @@ export default function Calendar() {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Status</Label>
+                                    <Label className="text-foreground">Status</Label>
                                     {getStatusBadge(selectedAppointment.status)}
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Date & Time</Label>
+                                    <Label className="text-foreground">Date & Time</Label>
                                     <div className="flex items-center gap-2">
                                         <Clock className="h-4 w-4 text-muted-foreground" />
                                         <span className="text-foreground">
@@ -240,7 +410,7 @@ export default function Calendar() {
 
                                 {selectedAppointment.notes && (
                                     <div className="grid gap-2">
-                                        <Label>Client's Notes</Label>
+                                        <Label className="text-foreground">Client's Notes</Label>
                                         <div className="p-3 rounded-lg bg-muted">
                                             <p className="text-sm whitespace-pre-wrap text-foreground">
                                                 {selectedAppointment.notes}

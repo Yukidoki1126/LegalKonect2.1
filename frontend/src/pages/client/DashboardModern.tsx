@@ -52,6 +52,13 @@ export default function DashboardModern() {
 
     useEffect(() => {
         loadRecommendations();
+
+        // Auto-refresh every 60 seconds
+        const refreshInterval = setInterval(() => {
+            loadRecommendations();
+        }, 60000);
+
+        return () => clearInterval(refreshInterval);
     }, [user?.client?.latitude, user?.client?.longitude]);
 
     const handleViewFirm = async (id: number) => {
@@ -102,6 +109,10 @@ export default function DashboardModern() {
                 notes: bookingNotes,
             });
             setBookingMessage({ type: 'success', text: 'Appointment requested successfully!' });
+            
+            // Reload recommendations to reflect any changes
+            loadRecommendations();
+            
             setTimeout(() => {
                 setBookingFirm(null);
                 setBookingNotes('');
@@ -371,7 +382,16 @@ export default function DashboardModern() {
                         {viewingFirm && (
                             <>
                                 {/* Scrollable Content including Cover Photo */}
-                                <div className="overflow-y-auto max-h-[calc(90vh-5rem)]">
+                                <div className="overflow-y-auto max-h-[calc(90vh-5rem)] scrollbar-hide">
+                                    <style>{`
+                                        .scrollbar-hide::-webkit-scrollbar {
+                                            display: none;
+                                        }
+                                        .scrollbar-hide {
+                                            -ms-overflow-style: none;
+                                            scrollbar-width: none;
+                                        }
+                                    `}</style>
                                     {/* Cover Photo Banner */}
                                     <div className="relative h-48 overflow-hidden">
                                         {viewingFirm.profile_image_url ? (
@@ -848,26 +868,27 @@ export default function DashboardModern() {
 
                 {/* Booking Dialog */}
                 <Dialog open={!!bookingFirm} onOpenChange={() => { setBookingFirm(null); setBookingNotes(''); setBookingMessage({ type: '', text: '' }); }}>
-                    <DialogContent>
+                    <DialogContent className="text-foreground">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2 text-foreground">
                                 <Calendar className="h-5 w-5" />
                                 Request Appointment
                             </DialogTitle>
-                            <DialogDescription>
+                            <DialogDescription className="text-foreground/70">
                                 Book a consultation with {bookingFirm?.firm_name}
                             </DialogDescription>
                         </DialogHeader>
 
                         <form onSubmit={handleBookAppointment} className="space-y-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="booking-notes">Describe your legal needs (Optional)</Label>
+                                <Label htmlFor="booking-notes" className="text-foreground">Describe your legal needs (Optional)</Label>
                                 <Textarea
                                     id="booking-notes"
                                     value={bookingNotes}
                                     onChange={(e) => setBookingNotes(e.target.value)}
                                     placeholder="Tell the law firm about your legal matter..."
                                     rows={4}
+                                    className="text-foreground"
                                 />
                             </div>
 

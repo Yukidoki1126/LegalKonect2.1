@@ -222,13 +222,13 @@ export default function Verification() {
 
             {/* View Details Dialog */}
             <Dialog open={!!viewingFirm} onOpenChange={() => setViewingFirm(null)}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto text-foreground">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
+                        <DialogTitle className="flex items-center gap-2 text-foreground">
                             <Building2 className="h-5 w-5" />
                             {viewingFirm?.firm_name}
                         </DialogTitle>
-                        <DialogDescription>
+                        <DialogDescription className="text-foreground/70">
                             Law firm verification details
                         </DialogDescription>
                     </DialogHeader>
@@ -242,20 +242,20 @@ export default function Verification() {
                                     <div className="flex items-center gap-2 text-sm">
                                         <Mail className="h-4 w-4 text-muted-foreground" />
                                         <span className="font-medium text-foreground">Email:</span>
-                                        <span className="text-muted-foreground">{viewingFirm.user?.email}</span>
+                                        <span className="text-foreground">{viewingFirm.user?.email}</span>
                                     </div>
                                     {viewingFirm.phone && (
                                         <div className="flex items-center gap-2 text-sm">
                                             <Phone className="h-4 w-4 text-muted-foreground" />
                                             <span className="font-medium text-foreground">Phone:</span>
-                                            <span className="text-muted-foreground">{viewingFirm.phone}</span>
+                                            <span className="text-foreground">{viewingFirm.phone}</span>
                                         </div>
                                     )}
                                     {viewingFirm.address && (
                                         <div className="flex items-start gap-2 text-sm">
                                             <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                                             <span className="font-medium text-foreground">Address:</span>
-                                            <span className="text-muted-foreground flex-1">{viewingFirm.address}</span>
+                                            <span className="text-foreground flex-1">{viewingFirm.address}</span>
                                         </div>
                                     )}
                                 </div>
@@ -267,7 +267,7 @@ export default function Verification() {
                                     <h3 className="text-sm font-semibold mb-3 text-foreground">License Information</h3>
                                     <div className="flex items-center gap-2">
                                         <FileText className="h-4 w-4 text-muted-foreground" />
-                                        <Badge variant="outline" className="font-mono">
+                                        <Badge variant="outline" className="font-mono text-foreground">
                                             {viewingFirm.license_number}
                                         </Badge>
                                     </div>
@@ -280,7 +280,7 @@ export default function Verification() {
                                     <h3 className="text-sm font-semibold mb-3 text-foreground">Specializations</h3>
                                     <div className="flex flex-wrap gap-2">
                                         {viewingFirm.specializations.map((s) => (
-                                            <Badge key={s.id} variant="secondary">
+                                            <Badge key={s.id} variant="secondary" className="text-foreground">
                                                 {s.name}
                                             </Badge>
                                         ))}
@@ -292,7 +292,7 @@ export default function Verification() {
                             {viewingFirm.description && (
                                 <div>
                                     <h3 className="text-sm font-semibold mb-3 text-foreground">About</h3>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                    <p className="text-sm text-foreground leading-relaxed">
                                         {viewingFirm.description}
                                     </p>
                                 </div>
@@ -323,26 +323,26 @@ export default function Verification() {
 
             {/* Reject Dialog */}
             <Dialog open={!!showRejectModal} onOpenChange={() => setShowRejectModal(null)}>
-                <DialogContent>
+                <DialogContent className="text-foreground">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
+                        <DialogTitle className="flex items-center gap-2 text-foreground">
                             <AlertCircle className="h-5 w-5 text-destructive" />
                             Reject Law Firm
                         </DialogTitle>
-                        <DialogDescription>
+                        <DialogDescription className="text-foreground/70">
                             Please provide a reason for rejecting this law firm application
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4">
                         <div>
-                            <Label htmlFor="reason">Rejection Reason</Label>
+                            <Label htmlFor="reason" className="text-foreground">Rejection Reason</Label>
                             <Textarea
                                 id="reason"
                                 placeholder="Enter the reason for rejection..."
                                 value={rejectReason}
                                 onChange={(e) => setRejectReason(e.target.value)}
-                                className="mt-2"
+                                className="mt-2 text-foreground"
                                 rows={4}
                             />
                         </div>

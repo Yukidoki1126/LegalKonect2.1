@@ -26,6 +26,7 @@ export default function DashboardModern() {
     const navigate = useNavigate();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [previousStatus, setPreviousStatus] = useState<string | undefined>();
 
     const lawFirm = user?.law_firm;
     const isApproved = lawFirm?.verification_status === 'approved';
@@ -42,12 +43,21 @@ export default function DashboardModern() {
         }
     };
 
+    // Track status changes and reload when approved
+    useEffect(() => {
+        if (previousStatus === 'pending' && isApproved) {
+            // Status changed from pending to approved - reload the page
+            window.location.reload();
+        }
+        setPreviousStatus(lawFirm?.verification_status);
+    }, [lawFirm?.verification_status, previousStatus, isApproved]);
+
     useEffect(() => {
         if (isApproved) {
             loadData();
             const refreshInterval = setInterval(() => {
                 loadData();
-            }, 30000);
+            }, 15000);
             return () => clearInterval(refreshInterval);
         } else {
             setLoading(false);
@@ -56,9 +66,10 @@ export default function DashboardModern() {
 
     useEffect(() => {
         if (isPending) {
+            // Check status every 5 seconds when pending
             const statusCheckInterval = setInterval(async () => {
                 await refreshUser();
-            }, 10000);
+            }, 5000);
             return () => clearInterval(statusCheckInterval);
         }
     }, [isPending, refreshUser]);

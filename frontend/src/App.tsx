@@ -7,6 +7,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import Login from './pages/auth/Login';
 import RegisterClient from './pages/auth/RegisterClient';
 import RegisterLawFirm from './pages/auth/RegisterLawFirm';
+import ResetPassword from './pages/auth/ResetPassword';
 
 // Dashboard Pages
 import ClientDashboard from './pages/client/DashboardModern';
@@ -95,6 +96,14 @@ function AppRoutes() {
         element={
           <PublicRoute>
             <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <PublicRoute>
+            <ResetPassword />
           </PublicRoute>
         }
       />

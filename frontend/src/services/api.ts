@@ -335,6 +335,29 @@ class ApiService {
         const response = await this.api.get('/admin/analytics/distances');
         return response.data;
     }
+
+    async changePassword(data: {
+        current_password: string;
+        new_password: string;
+    }): Promise<{ message: string }> {
+        const response = await this.api.put('/auth/change-password', data);
+        return response.data;
+    }
+
+    async forgotPassword(email: string): Promise<{ message: string }> {
+        const response = await this.api.post('/auth/forgot-password', { email });
+        return response.data;
+    }
+
+    async resetPassword(data: {
+        email: string;
+        token: string;
+        password: string;
+        password_confirmation: string;
+    }): Promise<{ message: string }> {
+        const response = await this.api.post('/auth/reset-password', data);
+        return response.data;
+    }
 }
 
 export const api = new ApiService();

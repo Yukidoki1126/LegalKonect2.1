@@ -117,19 +117,7 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                     </nav>
 
                     {/* User Profile */}
-                    <div className="p-4 border-t border-border space-y-2">
-                        <Button
-                            variant="outline"
-                            className="w-full justify-start gap-2 text-foreground"
-                            onClick={toggleTheme}
-                        >
-                            {theme === 'dark' ? (
-                                <Sun className="h-4 w-4" />
-                            ) : (
-                                <Moon className="h-4 w-4" />
-                            )}
-                            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                        </Button>
+                    <div className="p-4 border-t border-border">
                         <Button
                             variant="outline"
                             className="w-full justify-start gap-2 text-foreground"
@@ -160,6 +148,7 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setSidebarOpen(false)}
+                                    className="text-foreground"
                                 >
                                     <X className="h-5 w-5" />
                                 </Button>
@@ -184,19 +173,7 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                                 ))}
                             </nav>
 
-                            <div className="p-4 border-t border-border space-y-2">
-                                <Button
-                                    variant="outline"
-                                    className="w-full justify-start gap-2 text-foreground"
-                                    onClick={toggleTheme}
-                                >
-                                    {theme === 'dark' ? (
-                                        <Sun className="h-4 w-4" />
-                                    ) : (
-                                        <Moon className="h-4 w-4" />
-                                    )}
-                                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                                </Button>
+                            <div className="p-4 border-t border-border">
                                 <Button
                                     variant="outline"
                                     className="w-full justify-start gap-2 text-foreground"
@@ -218,7 +195,7 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="lg:hidden"
+                        className="lg:hidden text-foreground"
                         onClick={() => setSidebarOpen(true)}
                     >
                         <Menu className="h-5 w-5" />

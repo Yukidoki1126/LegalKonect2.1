@@ -149,7 +149,7 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="md:hidden"
+                            className="md:hidden text-foreground"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         >
                             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

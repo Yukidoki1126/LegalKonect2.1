@@ -93,7 +93,8 @@ export default function RegisterLawFirm() {
         <div className="auth-container">
             <div className="auth-card register-card law-firm-register">
                 <div className="auth-header">
-                    <h1>🏛️ Register Law Firm</h1>
+                    <div className="brand-icon" style={{fontSize: '2.5rem', marginBottom: '0.5rem'}}>🏛️</div>
+                    <h1>Register Law Firm</h1>
                     <p>Create your firm profile to connect with clients</p>
                     <div className="step-indicator">
                         <div className={`step ${step >= 1 ? 'active' : ''}`}>1<span>Account</span></div>
@@ -304,8 +305,7 @@ export default function RegisterLawFirm() {
                     {step === 3 && (
                         <div className="form-section">
                             <div className="form-group">
-                                <label>Legal Specializations Offered *</label>
-                                <p className="form-help">Select the areas of law your firm practices</p>
+                                <label>Legal Specializations Offered * <span className="form-help" style={{fontWeight: 'normal'}}>(Select practice areas)</span></label>
                                 <div className="specialization-grid">
                                     {specializations.map((spec) => (
                                         <label key={spec.id} className="specialization-checkbox">

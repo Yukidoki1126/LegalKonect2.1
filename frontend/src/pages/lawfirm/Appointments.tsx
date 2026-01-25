@@ -83,10 +83,10 @@ export default function Appointments() {
             Notification.requestPermission();
         }
 
-        // Auto-refresh every 20 seconds to check for new appointment requests
+        // Auto-refresh every 5 seconds to check for new appointment requests
         const refreshInterval = setInterval(() => {
             loadData(true); // Silent refresh (don't show loading spinner)
-        }, 20000); // 20 seconds for more frequent updates on appointments page
+        }, 5000); // 5 seconds for very frequent updates on appointments page
 
         return () => clearInterval(refreshInterval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -364,11 +364,11 @@ export default function Appointments() {
                 <Dialog open={!!viewingClient} onOpenChange={() => setViewingClient(null)}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
+                            <DialogTitle className="flex items-center gap-2 text-foreground">
                                 <User className="h-5 w-5" />
                                 Client Information
                             </DialogTitle>
-                            <DialogDescription>
+                            <DialogDescription className="text-foreground">
                                 Contact and consultation details
                             </DialogDescription>
                         </DialogHeader>
@@ -376,7 +376,7 @@ export default function Appointments() {
                         {viewingClient && (
                             <div className="space-y-4">
                                 <div className="grid gap-2">
-                                    <Label>Name</Label>
+                                    <Label className="text-foreground">Name</Label>
                                     <div className="flex items-center gap-2">
                                         <User className="h-4 w-4 text-muted-foreground" />
                                         <span className="text-foreground">{viewingClient.client?.user?.name}</span>
@@ -384,7 +384,7 @@ export default function Appointments() {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Email</Label>
+                                    <Label className="text-foreground">Email</Label>
                                     <div className="flex items-center gap-2">
                                         <Mail className="h-4 w-4 text-muted-foreground" />
                                         <a 
@@ -397,7 +397,7 @@ export default function Appointments() {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label>Phone</Label>
+                                    <Label className="text-foreground">Phone</Label>
                                     <div className="flex items-center gap-2">
                                         <Phone className="h-4 w-4 text-muted-foreground" />
                                         {viewingClient.client?.phone ? (
@@ -415,7 +415,7 @@ export default function Appointments() {
 
                                 {viewingClient.client?.specializations && viewingClient.client.specializations.length > 0 && (
                                     <div className="grid gap-2">
-                                        <Label>Looking for</Label>
+                                        <Label className="text-foreground">Looking for</Label>
                                         <div className="flex flex-wrap gap-2">
                                             {viewingClient.client.specializations.map(s => (
                                                 <Badge key={s.id} variant="secondary">
@@ -428,7 +428,7 @@ export default function Appointments() {
 
                                 {viewingClient.notes && (
                                     <div className="grid gap-2">
-                                        <Label>Client's Notes</Label>
+                                        <Label className="text-foreground">Client's Notes</Label>
                                         <div className="p-3 rounded-lg bg-muted">
                                             <p className="text-sm whitespace-pre-wrap text-foreground">
                                                 {viewingClient.notes}

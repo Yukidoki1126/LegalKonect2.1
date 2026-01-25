@@ -13,14 +13,13 @@ export default function Reviews() {
     useEffect(() => {
         loadData();
 
-        // Auto-refresh every 30 seconds to check for new reviews
+        // Auto-refresh every 20 seconds to check for new reviews
         const refreshInterval = setInterval(() => {
             loadData();
-        }, 30000);
+        }, 20000);
 
         return () => clearInterval(refreshInterval);
     }, []);
-
 
     const loadData = async () => {
         setLoading(true);

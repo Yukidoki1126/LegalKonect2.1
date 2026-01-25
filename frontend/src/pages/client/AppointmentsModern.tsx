@@ -44,10 +44,10 @@ export default function AppointmentsModern() {
     useEffect(() => {
         loadAppointments();
 
-        // Auto-refresh every 30 seconds
+        // Auto-refresh every 10 seconds to detect when firm schedules appointment
         const refreshInterval = setInterval(() => {
             loadAppointments();
-        }, 30000);
+        }, 10000);
 
         return () => clearInterval(refreshInterval);
     }, []);
@@ -187,41 +187,60 @@ export default function AppointmentsModern() {
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">
+                {/* Booked Date */}
+                <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                    <p className="text-xs text-blue-600 dark:text-blue-400">
+                        Booked on {formatDate(apt.created_at)} at {formatTime(apt.created_at)}
+                    </p>
+                </div>
+
                 {/* Details Grid */}
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                        <Calendar className="h-5 w-5 text-primary mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground">Date</p>
-                            <p className="text-sm text-muted-foreground">{formatDate(apt.scheduled_at)}</p>
+                {apt.status === 'pending' ? (
+                    <div className="p-4 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                            <p className="text-sm font-medium text-amber-900 dark:text-amber-100">Waiting for Confirmation</p>
                         </div>
+                        <p className="text-xs text-amber-700 dark:text-amber-300">
+                            The law firm will review your request and schedule an appointment date and time.
+                        </p>
                     </div>
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                        <Clock className="h-5 w-5 text-primary mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground">Time</p>
-                            <p className="text-sm text-muted-foreground">{formatTime(apt.scheduled_at)}</p>
-                        </div>
-                    </div>
-                    {apt.law_firm?.address && (
-                        <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 sm:col-span-2">
-                            <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                ) : (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                            <Calendar className="h-5 w-5 text-primary mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-sm font-medium text-foreground">Location</p>
-                                <p className="text-sm text-muted-foreground">{apt.law_firm.address}</p>
+                                <p className="text-sm font-medium text-foreground">Appointment Date</p>
+                                <p className="text-sm text-muted-foreground">{formatDate(apt.scheduled_at)}</p>
                             </div>
                         </div>
-                    )}
-                </div>
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                            <Clock className="h-5 w-5 text-primary mt-0.5" />
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-foreground">Appointment Time</p>
+                                <p className="text-sm text-muted-foreground">{formatTime(apt.scheduled_at)}</p>
+                            </div>
+                        </div>
+                        {apt.law_firm?.address && (
+                            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 sm:col-span-2">
+                                <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-foreground">Location</p>
+                                    <p className="text-sm text-muted-foreground">{apt.law_firm.address}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Notes */}
                 {apt.notes && (
-                    <div className="p-3 rounded-lg border bg-card">
+                    <div className="p-3 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30">
                         <div className="flex items-start gap-2 mb-2">
-                            <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                            <p className="text-sm font-medium text-foreground">Your Notes</p>
+                            <FileText className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5" />
+                            <p className="text-sm font-medium text-green-900 dark:text-green-100">Notes from Law Firm</p>
                         </div>
-                        <p className="text-sm text-muted-foreground pl-6">{apt.notes}</p>
+                        <p className="text-sm text-green-800 dark:text-green-200 pl-6">{apt.notes}</p>
                     </div>
                 )}
 

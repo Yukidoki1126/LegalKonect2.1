@@ -26,7 +26,10 @@ import {
     Scale,
     CheckCircle,
     AlertCircle,
-    Map
+    Map,
+    Lock,
+    Key,
+    Loader2
 } from 'lucide-react';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -48,6 +51,14 @@ export default function SettingsModern() {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [showMapModal, setShowMapModal] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordForm, setPasswordForm] = useState({
+        current_password: '',
+        new_password: '',
+        confirm_password: ''
+    });
+    const [passwordError, setPasswordError] = useState('');
+    const [changingPassword, setChangingPassword] = useState(false);
 
     const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
@@ -172,6 +183,57 @@ export default function SettingsModern() {
         }
     };
 
+    const handlePasswordChange = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPasswordError('');
+
+        // Validation
+        if (!passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password) {
+            setPasswordError('All fields are required');
+            return;
+        }
+
+        if (passwordForm.new_password.length < 8) {
+            setPasswordError('New password must be at least 8 characters');
+            return;
+        }
+
+        if (passwordForm.new_password !== passwordForm.confirm_password) {
+            setPasswordError('New passwords do not match');
+            return;
+        }
+
+        setChangingPassword(true);
+
+        try {
+            await api.changePassword({
+                current_password: passwordForm.current_password,
+                new_password: passwordForm.new_password
+            });
+
+            setMessage({ type: 'success', text: 'Password changed successfully!' });
+            setShowPasswordModal(false);
+            setPasswordForm({
+                current_password: '',
+                new_password: '',
+                confirm_password: ''
+            });
+            setPasswordError('');
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string; errors?: { current_password?: string[] } } } };
+            // Check for validation errors first
+            if (err.response?.data?.errors?.current_password) {
+                setPasswordError(err.response.data.errors.current_password[0]);
+            } else if (err.response?.data?.message) {
+                setPasswordError(err.response.data.message);
+            } else {
+                setPasswordError('Failed to change password. Please try again.');
+            }
+        } finally {
+            setChangingPassword(false);
+        }
+    };
+
     if (loading) {
         return (
             <ClientLayoutNew>
@@ -190,10 +252,22 @@ export default function SettingsModern() {
             <div className="space-y-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Profile Settings</h1>
-                    <p className="text-muted-foreground">
-                        Update your personal information and legal interests
-                    </p>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight text-foreground">Profile Settings</h1>
+                            <p className="text-muted-foreground">
+                                Update your personal information and legal interests
+                            </p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowPasswordModal(true)}
+                            className="flex items-center gap-2 text-foreground"
+                        >
+                            <Lock className="h-4 w-4" />
+                            Change Password
+                        </Button>
+                    </div>
                 </div>
 
                 {message.text && (
@@ -370,7 +444,7 @@ export default function SettingsModern() {
                                 <MapPin className="h-5 w-5" />
                                 Pin Your Location
                             </DialogTitle>
-                            <DialogDescription>
+                            <DialogDescription className="text-foreground">
                                 Click on the map to set your exact location
                             </DialogDescription>
                         </DialogHeader>
@@ -405,13 +479,99 @@ export default function SettingsModern() {
                         )}
 
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowMapModal(false)}>
+                            <Button variant="outline" onClick={() => setShowMapModal(false)} className="text-foreground">
                                 Cancel
                             </Button>
                             <Button onClick={() => setShowMapModal(false)}>
                                 Confirm Location
                             </Button>
                         </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Change Password Modal */}
+                <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-foreground">
+                                <Key className="h-5 w-5" />
+                                Change Password
+                            </DialogTitle>
+                            <DialogDescription className="text-foreground pt-2">
+                                Enter your current password and choose a new one
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handlePasswordChange} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="current_password" className="text-foreground font-medium">Current Password</Label>
+                                <Input
+                                    id="current_password"
+                                    type="password"
+                                    value={passwordForm.current_password}
+                                    onChange={(e) => setPasswordForm(prev => ({ ...prev, current_password: e.target.value }))}
+                                    placeholder="Enter current password"
+                                    className="text-foreground"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="new_password" className="text-foreground font-medium">New Password</Label>
+                                <Input
+                                    id="new_password"
+                                    type="password"
+                                    value={passwordForm.new_password}
+                                    onChange={(e) => setPasswordForm(prev => ({ ...prev, new_password: e.target.value }))}
+                                    placeholder="Enter new password (min 8 characters)"
+                                    className="text-foreground"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="confirm_password" className="text-foreground font-medium">Confirm New Password</Label>
+                                <Input
+                                    id="confirm_password"
+                                    type="password"
+                                    value={passwordForm.confirm_password}
+                                    onChange={(e) => setPasswordForm(prev => ({ ...prev, confirm_password: e.target.value }))}
+                                    placeholder="Confirm new password"
+                                    className="text-foreground"
+                                    required
+                                />
+                            </div>
+                            {passwordError && (
+                                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+                                    {passwordError}
+                                </div>
+                            )}
+                            <div className="flex justify-end gap-2 pt-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        setShowPasswordModal(false);
+                                        setPasswordForm({
+                                            current_password: '',
+                                            new_password: '',
+                                            confirm_password: ''
+                                        });
+                                        setPasswordError('');
+                                    }}
+                                    className="text-foreground"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button type="submit" disabled={changingPassword}>
+                                    {changingPassword ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Changing...
+                                        </>
+                                    ) : (
+                                        'Change Password'
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
                     </DialogContent>
                 </Dialog>
             </div>

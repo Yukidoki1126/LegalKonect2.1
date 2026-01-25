@@ -70,15 +70,21 @@
   box-sizing: border-box;
 }
 
-html,
-body,
-#root {
+html {
   height: 100%;
   width: 100%;
+  overflow-y: scroll;
 }
 
 body {
+  height: 100%;
+  width: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100%;
+  width: 100%;
 }

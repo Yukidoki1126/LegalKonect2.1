@@ -157,7 +157,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="lg:hidden"
+                            className="lg:hidden text-foreground"
                             onClick={() => setSidebarOpen(true)}
                         >
                             <Menu className="h-6 w-6" />
