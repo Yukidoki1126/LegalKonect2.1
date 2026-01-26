@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class LawFirm extends Model
 {
@@ -51,7 +52,18 @@ class LawFirm extends Model
             return null;
         }
 
-        return config('filesystems.disks.r2.url') . '/' . $this->profile_image;
+        // Check if R2 public URL is configured and valid
+        $r2Url = config('filesystems.disks.r2.url');
+        
+        // Try to validate if R2 URL is actually accessible
+        // If not configured or empty, fall back to backend proxy
+        if (!empty($r2Url) && str_starts_with($r2Url, 'http')) {
+            return $r2Url . '/' . $this->profile_image;
+        }
+
+        // Fallback to backend proxy URL
+        $apiUrl = rtrim(config('app.url'), '/');
+        return $apiUrl . '/api/storage/' . $this->profile_image;
     }
 
     public function getGalleryImagesUrlsAttribute(): array
@@ -60,8 +72,21 @@ class LawFirm extends Model
             return [];
         }
 
+        // Check if R2 public URL is configured and valid
+        $r2Url = config('filesystems.disks.r2.url');
+        $apiUrl = rtrim(config('app.url'), '/');
+        
+        // Try to use R2 public URL if available
+        if (!empty($r2Url) && str_starts_with($r2Url, 'http')) {
+            return array_map(
+                fn($path) => $r2Url . '/' . $path,
+                $this->gallery_images
+            );
+        }
+
+        // Fallback to backend proxy URLs
         return array_map(
-            fn($path) => config('filesystems.disks.r2.url') . '/' . $path,
+            fn($path) => $apiUrl . '/api/storage/' . $path,
             $this->gallery_images
         );
     }

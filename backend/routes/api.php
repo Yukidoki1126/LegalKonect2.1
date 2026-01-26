@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\ClientController;
 use App\Http\Controllers\LawFirm\LawFirmController;
+use App\Http\Controllers\StorageController;
 use App\Models\LawFirm;
 use App\Models\Specialization;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,9 @@ Route::prefix('auth')->group(function () {
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
+
+// Public file serving (for R2 images when public URLs are not available)
+Route::get('/storage/{path}', [StorageController::class, 'serveFile'])->where('path', '.*');
 
 // Public specializations list
 Route::get('/specializations', function () {

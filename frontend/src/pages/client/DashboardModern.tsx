@@ -177,31 +177,30 @@ export default function DashboardModern() {
         
         // 3. Rating Score (25% weight)
         let ratingScore = 0;
-        if (rec.average_rating > 0) {
+        if (rec.rating_count > 0 && rec.average_rating > 0) {
             // Convert 5-star rating to percentage (5 stars = 100%)
             ratingScore = (rec.average_rating / 5) * 100 * 0.25;
-        } else {
-            ratingScore = 12.5; // No ratings = 50% of weight
         }
+        // No reviews = 0 points (transparent scoring)
         
-        // 4. Experience Score (15% weight) - based on number of reviews
+        // 4. Experience Score (15% weight) - based on years of experience
         let experienceScore = 0;
-        if (rec.rating_count > 0) {
-            // Score based on review count brackets
-            if (rec.rating_count >= 50) {
-                experienceScore = 15; // 50+ reviews = full score
-            } else if (rec.rating_count >= 20) {
-                experienceScore = 12; // 20-49 reviews = 80%
-            } else if (rec.rating_count >= 10) {
-                experienceScore = 9; // 10-19 reviews = 60%
-            } else if (rec.rating_count >= 5) {
-                experienceScore = 6; // 5-9 reviews = 40%
+        const expRange = rec.law_firm.experience_range;
+        if (expRange) {
+            // Score based on experience range
+            if (expRange.includes('20+') || expRange.includes('20 +')) {
+                experienceScore = 15; // 20+ years = full score
+            } else if (expRange.includes('15-20') || expRange.includes('15 - 20')) {
+                experienceScore = 12; // 15-20 years = 80%
+            } else if (expRange.includes('10-15') || expRange.includes('10 - 15')) {
+                experienceScore = 9; // 10-15 years = 60%
+            } else if (expRange.includes('5-10') || expRange.includes('5 - 10')) {
+                experienceScore = 6; // 5-10 years = 40%
             } else {
-                experienceScore = 3; // 1-4 reviews = 20%
+                experienceScore = 3; // Less than 5 years = 20%
             }
-        } else {
-            experienceScore = 7.5; // No reviews = 50%
         }
+        // No experience data = 0 points (transparent scoring)
         
         totalScore = specializationScore + distanceScore + ratingScore + experienceScore;
         
@@ -509,17 +508,27 @@ export default function DashboardModern() {
                                             distancePoints = 10;
                                         }
                                         
-                                        const ratingPoints = viewingData.average_rating > 0 
+                                        // Rating points - 0 if no reviews (transparent scoring)
+                                        const ratingPoints = (viewingData.rating_count > 0 && viewingData.average_rating > 0)
                                             ? Math.round((viewingData.average_rating / 5) * 25) 
-                                            : 12.5;
+                                            : 0;
                                         
-                                        let experiencePoints = 0;
-                                        if (viewingData.rating_count >= 50) experiencePoints = 15;
-                                        else if (viewingData.rating_count >= 20) experiencePoints = 12;
-                                        else if (viewingData.rating_count >= 10) experiencePoints = 9;
-                                        else if (viewingData.rating_count >= 5) experiencePoints = 6;
-                                        else if (viewingData.rating_count > 0) experiencePoints = 3;
-                                        else experiencePoints = 7.5;
+                                        // Experience points based on years of experience
+                                        let experiencePoints = 0; // Default 0 if no data
+                                        const expRange = viewingFirm.experience_range;
+                                        if (expRange) {
+                                            if (expRange.includes('20+') || expRange.includes('20 +')) {
+                                                experiencePoints = 15; // 20+ years = full score
+                                            } else if (expRange.includes('15-20') || expRange.includes('15 - 20')) {
+                                                experiencePoints = 12; // 15-20 years = 80%
+                                            } else if (expRange.includes('10-15') || expRange.includes('10 - 15')) {
+                                                experiencePoints = 9; // 10-15 years = 60%
+                                            } else if (expRange.includes('5-10') || expRange.includes('5 - 10')) {
+                                                experiencePoints = 6; // 5-10 years = 40%
+                                            } else {
+                                                experiencePoints = 3; // Less than 5 years = 20%
+                                            }
+                                        }
                                         
                                         return (
                                             <Card className="border-primary/20 bg-primary/5">
@@ -625,7 +634,7 @@ export default function DashboardModern() {
                                                                             style={{ width: `${(experiencePoints / 15) * 100}%` }}
                                                                         />
                                                                     </div>
-                                                                    <span className="text-xs text-muted-foreground w-16 text-right">{viewingData.rating_count} reviews</span>
+                                                                    <span className="text-xs text-muted-foreground w-16 text-right">{viewingFirm.experience_range || 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
