@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import FloatingFAQ from '@/components/client/FloatingFAQ';
 import {
     LayoutDashboard,
     Calendar,
@@ -241,6 +242,9 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
             <main className="flex-1 p-4 lg:p-6 max-w-7xl mx-auto">
                 {children}
             </main>
+
+            {/* Floating FAQ Button */}
+            <FloatingFAQ />
         </div>
     );
 }
