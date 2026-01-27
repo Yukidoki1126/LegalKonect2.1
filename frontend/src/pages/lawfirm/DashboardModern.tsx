@@ -203,8 +203,8 @@ export default function DashboardModern() {
                     <Card className="hover:shadow-md transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium text-muted-foreground">Total Appointments</CardTitle>
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                <ClipboardList className="h-5 w-5 text-primary" />
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center">
+                                <ClipboardList className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -242,8 +242,8 @@ export default function DashboardModern() {
                     <Card className="hover:shadow-md transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-                            <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                                <TrendingUp className="h-5 w-5 text-blue-600" />
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-100 to-teal-100 dark:from-cyan-900/30 dark:to-teal-900/30 flex items-center justify-center">
+                                <TrendingUp className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -332,8 +332,8 @@ export default function DashboardModern() {
                                         className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 transition-all hover:shadow-sm"
                                     >
                                         <div className="flex items-start gap-4 flex-1">
-                                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                <Users className="h-6 w-6 text-primary" />
+                                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center flex-shrink-0">
+                                                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-base">{apt.client?.user?.name || 'Client'}</p>
@@ -361,7 +361,7 @@ export default function DashboardModern() {
                                                     <Button
                                                         size="sm"
                                                         onClick={() => handleUpdateStatus(apt.id, 'confirmed')}
-                                                        className="whitespace-nowrap"
+                                                        className="whitespace-nowrap bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-md shadow-blue-500/20"
                                                     >
                                                         <CheckCircle className="mr-1.5 h-4 w-4" />
                                                         Confirm
@@ -375,7 +375,7 @@ export default function DashboardModern() {
                                                     </Button>
                                                 </>
                                             ) : (
-                                                <Badge className="whitespace-nowrap">
+                                                <Badge className="whitespace-nowrap bg-gradient-to-r from-cyan-500 to-teal-500 text-white border-0">
                                                     <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
                                                     Confirmed
                                                 </Badge>

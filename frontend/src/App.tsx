@@ -2,9 +2,11 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { NetworkStatus, useNetworkStatus } from './components/common/NetworkStatus';
+import { LoadingScreen } from './components/common/LoadingScreen';
 
 // Auth Pages
-import Login from './pages/auth/Login';
+import Login from './pages/auth/LoginNew';
 import RegisterClient from './pages/auth/RegisterClient';
 import RegisterLawFirm from './pages/auth/RegisterLawFirm';
 import ResetPassword from './pages/auth/ResetPassword';
@@ -37,7 +39,7 @@ function ProtectedRoute({
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) {
-    return <div className="loading-screen">Loading...</div>;
+    return <LoadingScreen message="Authenticating..." timeout={8000} />;
   }
 
   if (!isAuthenticated) {
@@ -66,7 +68,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) {
-    return <div className="loading-screen">Loading...</div>;
+    return <LoadingScreen message="Loading..." timeout={8000} />;
   }
 
   if (isAuthenticated) {
@@ -232,12 +234,25 @@ function AppRoutes() {
   );
 }
 
+// Network Status Wrapper
+function NetworkStatusWrapper({ children }: { children: React.ReactNode }) {
+  const networkStatus = useNetworkStatus();
+  return (
+    <>
+      {children}
+      <NetworkStatus status={networkStatus} />
+    </>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <AppRoutes />
+          <NetworkStatusWrapper>
+            <AppRoutes />
+          </NetworkStatusWrapper>
         </Router>
       </AuthProvider>
     </ThemeProvider>

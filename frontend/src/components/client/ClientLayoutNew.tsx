@@ -49,7 +49,9 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                 <div className="flex h-16 items-center justify-between px-4 lg:px-6">
                     {/* Logo */}
                     <div className="flex items-center gap-2">
-                        <Scale className="h-6 w-6 text-primary" />
+                        <div className="p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg shadow-md shadow-blue-500/20">
+                            <Scale className="h-5 w-5 text-white" />
+                        </div>
                         <span className="font-bold text-xl text-foreground">LegalKonect</span>
                     </div>
 
@@ -62,7 +64,7 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                     to={item.href}
                                     className={({ isActive }) =>
                                         `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-                                            ? 'bg-primary text-primary-foreground'
+                                            ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md shadow-blue-500/20'
                                             : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                         }`
                                     }
@@ -98,8 +100,8 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                 className="gap-2"
                                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                             >
-                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <User className="h-4 w-4 text-primary" />
+                                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                                    <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div className="text-left hidden lg:block">
                                     <p className="text-sm font-medium text-foreground">{user?.name}</p>
@@ -170,7 +172,7 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                     onClick={() => setMobileMenuOpen(false)}
                                     className={({ isActive }) =>
                                         `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive
-                                            ? 'bg-primary text-primary-foreground'
+                                            ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md'
                                             : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                         }`
                                     }
@@ -184,8 +186,8 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                         {/* User Info - Mobile */}
                         <div className="p-4 border-t border-border">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <User className="h-5 w-5 text-primary" />
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium truncate">{user?.name}</p>

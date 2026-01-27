@@ -93,7 +93,9 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                 <div className="flex flex-col h-full">
                     {/* Logo */}
                     <div className="flex items-center gap-2 h-16 px-6 border-b border-border">
-                        <Scale className="h-6 w-6 text-primary" />
+                        <div className="p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg shadow-md shadow-blue-500/20">
+                            <Scale className="h-5 w-5 text-white" />
+                        </div>
                         <span className="font-bold text-xl text-foreground">LegalKonect</span>
                     </div>
 
@@ -105,7 +107,7 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                                 to={item.href}
                                 className={({ isActive }) =>
                                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-                                        ? 'bg-primary text-primary-foreground'
+                                        ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md shadow-blue-500/20'
                                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                     }`
                                 }
@@ -141,7 +143,9 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                         <div className="flex flex-col h-full">
                             <div className="flex items-center justify-between h-16 px-6 border-b border-border">
                                 <div className="flex items-center gap-2">
-                                    <Scale className="h-6 w-6 text-primary" />
+                                    <div className="p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg shadow-md shadow-blue-500/20">
+                                        <Scale className="h-5 w-5 text-white" />
+                                    </div>
                                     <span className="font-bold text-xl text-foreground">LegalKonect</span>
                                 </div>
                                 <Button
@@ -162,7 +166,7 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                                         onClick={() => setSidebarOpen(false)}
                                         className={({ isActive }) =>
                                             `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-                                                ? 'bg-primary text-primary-foreground'
+                                                ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md'
                                                 : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                             }`
                                         }
@@ -221,7 +225,7 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                     <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-foreground">{lawFirm?.firm_name || 'Law Firm'}</p>
                         {isApproved ? (
-                            <Badge variant="outline" className="gap-1">
+                            <Badge className="gap-1 bg-gradient-to-r from-cyan-500 to-teal-500 text-white border-0">
                                 <CheckCircle className="h-3 w-3" />
                                 Verified
                             </Badge>

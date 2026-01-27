@@ -28,11 +28,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const savedToken = localStorage.getItem('token');
             if (savedToken) {
                 try {
-                    const userData = await api.getUser();
-                    setUser(userData);
-                } catch {
+                    // Add additional timeout wrapper (10 seconds max for initial auth)
+                    const timeoutPromise = new Promise<never>((_, reject) => {
+                        setTimeout(() => reject(new Error('Authentication timeout')), 10000);
+                    });
+                    
+                    const userData = await Promise.race([
+                        api.getUser(),
+                        timeoutPromise
+                    ]);
+                    
+                    setUser(userData as User);
+                } catch (error) {
+                    console.error('Auth initialization failed:', error);
+                    // Clear invalid/expired token
                     localStorage.removeItem('token');
                     setToken(null);
+                    setUser(null);
                 }
             }
             setLoading(false);

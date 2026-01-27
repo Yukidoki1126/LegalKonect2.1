@@ -251,18 +251,26 @@ export default function SettingsModern() {
         <ClientLayoutNew>
             <div className="space-y-6">
                 {/* Header */}
-                <div>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-foreground">Profile Settings</h1>
-                            <p className="text-muted-foreground">
-                                Update your personal information and legal interests
-                            </p>
+                <div className="pb-6 border-b border-slate-200 dark:border-slate-700">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                            <div className="p-3 rounded-2xl shadow-lg" style={{ 
+                                background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                                boxShadow: '0 8px 20px -5px rgba(37, 99, 235, 0.35)'
+                            }}>
+                                <User className="h-7 w-7 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight text-foreground">Profile Settings</h1>
+                                <p className="text-muted-foreground mt-1">
+                                    Update your personal information and legal interests
+                                </p>
+                            </div>
                         </div>
                         <Button
                             variant="outline"
                             onClick={() => setShowPasswordModal(true)}
-                            className="flex items-center gap-2 text-foreground"
+                            className="flex items-center gap-2 text-foreground hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 transition-all"
                         >
                             <Lock className="h-4 w-4" />
                             Change Password
@@ -271,14 +279,18 @@ export default function SettingsModern() {
                 </div>
 
                 {message.text && (
-                    <Card className={message.type === 'error' ? 'border-destructive' : 'border-green-500'}>
+                    <Card className={message.type === 'error' ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800' : 'border-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 dark:border-cyan-800'}>
                         <CardContent className="flex items-center gap-3 pt-6">
                             {message.type === 'success' ? (
-                                <CheckCircle className="h-5 w-5 text-green-600" />
+                                <div className="p-2 rounded-full bg-cyan-100 dark:bg-cyan-900/50">
+                                    <CheckCircle className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+                                </div>
                             ) : (
-                                <AlertCircle className="h-5 w-5 text-destructive" />
+                                <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/50">
+                                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                                </div>
                             )}
-                            <p className={message.type === 'error' ? 'text-destructive' : 'text-green-600'}>
+                            <p className={message.type === 'error' ? 'text-red-700 dark:text-red-300 font-medium' : 'text-cyan-700 dark:text-cyan-300 font-medium'}>
                                 {message.text}
                             </p>
                         </CardContent>
@@ -287,10 +299,12 @@ export default function SettingsModern() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Personal Information */}
-                    <Card>
+                    <Card className="hover:shadow-lg transition-shadow duration-300">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-foreground">
-                                <User className="h-5 w-5" />
+                            <CardTitle className="flex items-center gap-3 text-foreground">
+                                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
+                                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                </div>
                                 Personal Information
                             </CardTitle>
                             <CardDescription>
@@ -309,7 +323,7 @@ export default function SettingsModern() {
                                             type="text"
                                             value={formData.name}
                                             onChange={handleChange}
-                                            className="pl-9"
+                                            className="pl-9 focus:border-blue-500 focus:ring-blue-500/20"
                                             required
                                         />
                                     </div>
@@ -325,7 +339,7 @@ export default function SettingsModern() {
                                             type="email"
                                             value={formData.email}
                                             onChange={handleChange}
-                                            className="pl-9"
+                                            className="pl-9 focus:border-blue-500 focus:ring-blue-500/20"
                                             required
                                         />
                                     </div>
@@ -342,7 +356,7 @@ export default function SettingsModern() {
                                             value={formData.phone}
                                             onChange={handleChange}
                                             placeholder="+63 XXX XXX XXXX"
-                                            className="pl-9"
+                                            className="pl-9 focus:border-blue-500 focus:ring-blue-500/20"
                                         />
                                     </div>
                                 </div>
@@ -385,6 +399,7 @@ export default function SettingsModern() {
                                             size="icon"
                                             onClick={() => setShowMapModal(true)}
                                             title="Pin on Map"
+                                            className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 transition-all"
                                         >
                                             <Map className="h-4 w-4" />
                                         </Button>
@@ -395,10 +410,12 @@ export default function SettingsModern() {
                     </Card>
 
                     {/* Legal Interests */}
-                    <Card>
+                    <Card className="hover:shadow-lg transition-shadow duration-300">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-foreground">
-                                <Scale className="h-5 w-5" />
+                            <CardTitle className="flex items-center gap-3 text-foreground">
+                                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
+                                    <Scale className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                </div>
                                 Legal Interests
                             </CardTitle>
                             <CardDescription>
@@ -430,8 +447,15 @@ export default function SettingsModern() {
 
                     {/* Actions */}
                     <div className="flex justify-end">
-                        <Button type="submit" disabled={saving} className="min-w-32">
-                            {saving ? 'Saving...' : 'Save Changes'}
+                        <Button type="submit" disabled={saving} className="min-w-32 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 text-white transition-all duration-300">
+                            {saving ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                'Save Changes'
+                            )}
                         </Button>
                     </div>
                 </form>
@@ -440,8 +464,10 @@ export default function SettingsModern() {
                 <Dialog open={showMapModal} onOpenChange={setShowMapModal}>
                     <DialogContent className="max-w-3xl">
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2 text-foreground">
-                                <MapPin className="h-5 w-5" />
+                            <DialogTitle className="flex items-center gap-3 text-foreground">
+                                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
+                                    <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                </div>
                                 Pin Your Location
                             </DialogTitle>
                             <DialogDescription className="text-foreground">
@@ -479,10 +505,10 @@ export default function SettingsModern() {
                         )}
 
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowMapModal(false)} className="text-foreground">
+                            <Button variant="outline" onClick={() => setShowMapModal(false)} className="text-foreground hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400">
                                 Cancel
                             </Button>
-                            <Button onClick={() => setShowMapModal(false)}>
+                            <Button onClick={() => setShowMapModal(false)} className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-lg shadow-blue-500/25 text-white">
                                 Confirm Location
                             </Button>
                         </DialogFooter>
@@ -493,8 +519,10 @@ export default function SettingsModern() {
                 <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2 text-foreground">
-                                <Key className="h-5 w-5" />
+                            <DialogTitle className="flex items-center gap-3 text-foreground">
+                                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
+                                    <Key className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                </div>
                                 Change Password
                             </DialogTitle>
                             <DialogDescription className="text-foreground pt-2">
@@ -556,11 +584,11 @@ export default function SettingsModern() {
                                         });
                                         setPasswordError('');
                                     }}
-                                    className="text-foreground"
+                                    className="text-foreground hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400"
                                 >
                                     Cancel
                                 </Button>
-                                <Button type="submit" disabled={changingPassword}>
+                                <Button type="submit" disabled={changingPassword} className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-lg shadow-blue-500/25 text-white">
                                     {changingPassword ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

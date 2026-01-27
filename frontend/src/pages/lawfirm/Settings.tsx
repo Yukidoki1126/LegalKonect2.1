@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Building2, Camera, MapPin, Phone, Mail, FileText, Upload, Trash2, Settings as SettingsIcon, X, Image as ImageIcon, Plus, Loader2, Users, Briefcase, Lock, Key } from 'lucide-react';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 const libraries: Libraries = ["places"];
@@ -695,11 +696,12 @@ export default function ProfileSettings() {
                                     <div className="flex items-center gap-6">
                                         <div className="h-32 w-32 rounded-lg border-2 border-dashed border-border overflow-hidden flex items-center justify-center bg-muted">
                                             {profileImageUrl ? (
-                                                <img 
+                                                <OptimizedImage 
                                                     src={profileImageUrl} 
                                                     alt="Firm profile" 
-                                                    className="h-full w-full object-cover"
-                                                    key={profileImageUrl}
+                                                    className="h-full w-full"
+                                                    retryCount={3}
+                                                    showRetryButton={true}
                                                 />
                                             ) : (
                                                 <Building2 className="h-16 w-16 text-muted-foreground" />
@@ -756,10 +758,12 @@ export default function ProfileSettings() {
                                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                                             {galleryImages.map((imageUrl, index) => (
                                                 <div key={index} className="relative group aspect-square rounded-lg border-2 border-border overflow-hidden">
-                                                    <img 
+                                                    <OptimizedImage 
                                                         src={imageUrl} 
                                                         alt={`Firm photo ${index + 1}`} 
-                                                        className="h-full w-full object-cover"
+                                                        className="h-full w-full"
+                                                        lazy={true}
+                                                        retryCount={3}
                                                     />
                                                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                         <Button

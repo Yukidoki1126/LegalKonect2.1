@@ -1,7 +1,25 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { AuthResponse, User, Specialization, Recommendation, Appointment, LawFirm, DashboardStats, CalendarEvent, Client } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+// Retry configuration
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000;
+const TIMEOUT_MS = 30000; // 30 seconds timeout
+
+// Check if error is retryable
+function isRetryableError(error: AxiosError): boolean {
+    // Retry on network errors
+    if (!error.response) return true;
+    
+    // Retry on 5xx server errors and 408 timeout
+    const status = error.response.status;
+    return status >= 500 || status === 408 || status === 429;
+}
+
+// Sleep helper
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 class ApiService {
     private api: AxiosInstance;
@@ -14,6 +32,7 @@ class ApiService {
                 'Accept': 'application/json',
             },
             withCredentials: true,
+            timeout: TIMEOUT_MS,
         });
 
         // Add token to requests
@@ -22,18 +41,37 @@ class ApiService {
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
+            // Add retry count to config
+            (config as any).__retryCount = (config as any).__retryCount || 0;
             return config;
         });
 
-        // Handle errors
+        // Handle errors with retry logic
         this.api.interceptors.response.use(
             (response) => response,
-            (error: AxiosError) => {
+            async (error: AxiosError) => {
+                const config = error.config as InternalAxiosRequestConfig & { __retryCount?: number };
+                
                 if (error.response?.status === 401) {
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
                     window.location.href = '/login';
+                    return Promise.reject(error);
                 }
+
+                // Check if we should retry
+                const retryCount = config?.__retryCount || 0;
+                if (config && isRetryableError(error) && retryCount < MAX_RETRIES) {
+                    config.__retryCount = retryCount + 1;
+                    
+                    // Exponential backoff with jitter
+                    const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount) + Math.random() * 500;
+                    console.log(`[API] Retry ${retryCount + 1}/${MAX_RETRIES} after ${Math.round(delay)}ms`);
+                    
+                    await sleep(delay);
+                    return this.api.request(config);
+                }
+                
                 return Promise.reject(error);
             }
         );

@@ -75,21 +75,33 @@ export default function AdminDashboard() {
         <AdminLayout>
             <div className="space-y-8">
                 {/* Header */}
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">System Overview</h1>
-                    <p className="text-muted-foreground mt-2">
-                        Monitor and manage your legal platform
-                    </p>
+                <div className="pb-6 border-b border-slate-200 dark:border-slate-700">
+                    <div className="flex items-start gap-4">
+                        <div className="p-3 rounded-2xl shadow-lg" style={{ 
+                            background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                            boxShadow: '0 8px 20px -5px rgba(37, 99, 235, 0.35)'
+                        }}>
+                            <Activity className="h-7 w-7 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight text-foreground">System Overview</h1>
+                            <p className="text-muted-foreground mt-2">
+                                Monitor and manage your legal platform
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-                    <Card>
+                    <Card className="hover:shadow-lg transition-shadow duration-300">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Total Clients
                             </CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
+                                <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-foreground">{stats?.total_clients || 0}</div>
@@ -99,12 +111,14 @@ export default function AdminDashboard() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-blue-500/50 bg-blue-500/5">
+                    <Card className="border-cyan-200 bg-cyan-50/50 dark:border-cyan-800 dark:bg-cyan-900/10 hover:shadow-lg transition-shadow duration-300">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Verified Firms
                             </CardTitle>
-                            <Building2 className="h-4 w-4 text-blue-500" />
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-100 to-teal-100 dark:from-cyan-900/50 dark:to-teal-900/50">
+                                <Building2 className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-foreground">{stats?.approved_firms || 0}</div>
@@ -114,12 +128,14 @@ export default function AdminDashboard() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-yellow-500/50 bg-yellow-500/5">
+                    <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-900/10 hover:shadow-lg transition-shadow duration-300">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Pending Review
                             </CardTitle>
-                            <Clock className="h-4 w-4 text-yellow-500" />
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-yellow-100 dark:from-amber-900/50 dark:to-yellow-900/50">
+                                <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-foreground">{stats?.pending_verifications || 0}</div>
@@ -129,12 +145,14 @@ export default function AdminDashboard() {
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="hover:shadow-lg transition-shadow duration-300">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Appointments
                             </CardTitle>
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30">
+                                <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-foreground">{stats?.total_appointments || 0}</div>
@@ -144,12 +162,14 @@ export default function AdminDashboard() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-green-500/50 bg-green-500/5">
+                    <Card className="border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-900/10 hover:shadow-lg transition-shadow duration-300">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
                                 Success Rate
                             </CardTitle>
-                            <TrendingUp className="h-4 w-4 text-green-500" />
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/50">
+                                <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-foreground">{conversionRate}%</div>
@@ -163,7 +183,7 @@ export default function AdminDashboard() {
                 {/* Main Content Grid */}
                 <div className="grid gap-4 md:grid-cols-7">
                     {/* Pending Verifications */}
-                    <Card className="md:col-span-4">
+                    <Card className="md:col-span-4 hover:shadow-lg transition-shadow duration-300">
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <div>
@@ -176,6 +196,7 @@ export default function AdminDashboard() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => navigate('/admin/verification')}
+                                    className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400 transition-all"
                                 >
                                     View All
                                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -195,11 +216,11 @@ export default function AdminDashboard() {
                                     {pendingFirms.slice(0, 4).map((firm) => (
                                         <div
                                             key={firm.id}
-                                            className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors"
+                                            className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 hover:shadow-md transition-all"
                                         >
                                             <div className="flex items-center gap-4 flex-1 min-w-0">
-                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                    <Building2 className="h-5 w-5 text-primary" />
+                                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center flex-shrink-0">
+                                                    <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="font-medium truncate text-foreground">{firm.firm_name}</p>
@@ -217,6 +238,7 @@ export default function AdminDashboard() {
                                                 <Button
                                                     size="sm"
                                                     onClick={() => handleApprove(firm.id)}
+                                                    className="bg-gradient-to-r from-cyan-600 to-teal-500 hover:from-cyan-500 hover:to-teal-400 shadow-md shadow-cyan-500/20 text-white"
                                                 >
                                                     <CheckCircle2 className="mr-2 h-4 w-4" />
                                                     Approve
@@ -225,6 +247,7 @@ export default function AdminDashboard() {
                                                     size="sm"
                                                     variant="outline"
                                                     onClick={() => navigate('/admin/verification')}
+                                                    className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-400"
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
@@ -239,10 +262,12 @@ export default function AdminDashboard() {
                     {/* Side Panel */}
                     <div className="md:col-span-3 space-y-4">
                         {/* System Status */}
-                        <Card>
+                        <Card className="hover:shadow-lg transition-shadow duration-300">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Activity className="h-5 w-5" />
+                                <CardTitle className="flex items-center gap-3">
+                                    <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
+                                        <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                    </div>
                                     System Status
                                 </CardTitle>
                             </CardHeader>
@@ -269,7 +294,7 @@ export default function AdminDashboard() {
                         </Card>
 
                         {/* Top Specializations */}
-                        <Card>
+                        <Card className="hover:shadow-lg transition-shadow duration-300">
                             <CardHeader>
                                 <CardTitle>Popular Specializations</CardTitle>
                                 <CardDescription>
@@ -287,7 +312,7 @@ export default function AdminDashboard() {
                                             <div key={index} className="space-y-2">
                                                 <div className="flex items-center justify-between text-sm">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                                                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold">
                                                             {index + 1}
                                                         </span>
                                                         <span className="font-medium text-foreground">{spec.name}</span>
@@ -298,7 +323,7 @@ export default function AdminDashboard() {
                                                 </div>
                                                 <div className="h-2 rounded-full bg-secondary overflow-hidden">
                                                     <div
-                                                        className="h-full bg-primary transition-all"
+                                                        className="h-full bg-gradient-to-r from-blue-600 to-cyan-500 transition-all"
                                                         style={{
                                                             width: `${(spec.count / (topSpecs[0]?.count || 1)) * 100}%`
                                                         }}

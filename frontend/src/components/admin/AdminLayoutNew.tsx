@@ -89,7 +89,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <div className="flex flex-col h-full">
                     {/* Logo */}
                     <div className="flex items-center gap-2 px-8 py-6 border-b border-border">
-                        <Scale className="h-8 w-8 text-primary" />
+                        <div className="p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg shadow-md shadow-blue-500/20">
+                            <Scale className="h-6 w-6 text-white" />
+                        </div>
                         <span className="text-xl font-bold text-foreground">LegalKonect</span>
                     </div>
 
@@ -102,7 +104,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                                 className={({ isActive }) => cn(
                                     "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
                                     isActive
-                                        ? "bg-primary text-primary-foreground"
+                                        ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md shadow-blue-500/20"
                                         : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                                 )}
                             >
@@ -120,7 +122,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     {/* User Profile */}
                     <div className="p-4 border-t border-border">
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white font-semibold shadow-md shadow-blue-500/20">
                                 {user?.name?.substring(0, 2).toUpperCase() || 'AD'}
                             </div>
                             <div className="flex-1 min-w-0">
