@@ -19,6 +19,20 @@ class AnalyticsService
     }
 
     /**
+     * Get the date format SQL expression based on the database driver
+     */
+    private function getMonthYearExpression(string $column): string
+    {
+        $driver = DB::getDriverName();
+        
+        return match ($driver) {
+            'pgsql' => "TO_CHAR({$column}, 'YYYY-MM')",
+            'mysql' => "DATE_FORMAT({$column}, '%Y-%m')",
+            default => "strftime('%Y-%m', {$column})", // SQLite
+        };
+    }
+
+    /**
      * Get dashboard statistics for admin
      */
     public function getDashboardStats(): array
@@ -57,16 +71,18 @@ class AnalyticsService
      */
     public function getMonthlyAppointments(int $months = 12): Collection
     {
+        $monthExpr = $this->getMonthYearExpression('scheduled_at');
+        
         return Appointment::query()
             ->select(
-                DB::raw("strftime('%Y-%m', scheduled_at) as month"),
+                DB::raw("{$monthExpr} as month"),
                 DB::raw('COUNT(*) as total'),
-                DB::raw('SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed'),
-                DB::raw('SUM(CASE WHEN status = "cancelled" THEN 1 ELSE 0 END) as cancelled')
+                DB::raw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed"),
+                DB::raw("SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled")
             )
             ->where('scheduled_at', '>=', now()->subMonths($months))
-            ->groupBy('month')
-            ->orderBy('month')
+            ->groupBy(DB::raw($monthExpr))
+            ->orderBy(DB::raw($monthExpr))
             ->get();
     }
 
@@ -92,6 +108,11 @@ class AnalyticsService
         foreach ($appointments as $appointment) {
             $client = $appointment->client;
             $firm = $appointment->lawFirm;
+
+            // Skip if client or firm is null (orphaned records)
+            if (!$client || !$firm) {
+                continue;
+            }
 
             if (
                 $this->geoService->isValidCoordinates($client->latitude, $client->longitude) &&
@@ -129,6 +150,11 @@ class AnalyticsService
             $client = $appointment->client;
             $firm = $appointment->lawFirm;
 
+            // Skip if client or firm is null (orphaned records)
+            if (!$client || !$firm) {
+                continue;
+            }
+
             if (
                 $this->geoService->isValidCoordinates($client->latitude, $client->longitude) &&
                 $this->geoService->isValidCoordinates($firm->latitude, $firm->longitude)
@@ -164,18 +190,20 @@ class AnalyticsService
      */
     public function getRegistrationTrends(int $months = 12): array
     {
+        $monthExpr = $this->getMonthYearExpression('created_at');
+        
         $clientTrends = Client::query()
-            ->select(DB::raw("strftime('%Y-%m', created_at) as month"), DB::raw('COUNT(*) as count'))
+            ->select(DB::raw("{$monthExpr} as month"), DB::raw('COUNT(*) as count'))
             ->where('created_at', '>=', now()->subMonths($months))
-            ->groupBy('month')
-            ->orderBy('month')
+            ->groupBy(DB::raw($monthExpr))
+            ->orderBy(DB::raw($monthExpr))
             ->pluck('count', 'month');
 
         $firmTrends = LawFirm::query()
-            ->select(DB::raw("strftime('%Y-%m', created_at) as month"), DB::raw('COUNT(*) as count'))
+            ->select(DB::raw("{$monthExpr} as month"), DB::raw('COUNT(*) as count'))
             ->where('created_at', '>=', now()->subMonths($months))
-            ->groupBy('month')
-            ->orderBy('month')
+            ->groupBy(DB::raw($monthExpr))
+            ->orderBy(DB::raw($monthExpr))
             ->pluck('count', 'month');
 
         return [

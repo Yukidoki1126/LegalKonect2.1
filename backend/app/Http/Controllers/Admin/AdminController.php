@@ -9,6 +9,7 @@ use App\Models\LawFirm;
 use App\Services\AnalyticsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -150,12 +151,22 @@ class AdminController extends Controller
      */
     public function appointmentAnalytics(): JsonResponse
     {
-        return response()->json([
-            'monthly_trends' => $this->analyticsService->getMonthlyAppointments(),
-            'status_distribution' => $this->analyticsService->getAppointmentStatusDistribution(),
-            'descriptive' => $this->analyticsService->getDescriptiveAnalytics(),
-            'top_firms' => $this->analyticsService->getTopPerformingFirms(),
-        ]);
+        try {
+            return response()->json([
+                'monthly_trends' => $this->analyticsService->getMonthlyAppointments(),
+                'status_distribution' => $this->analyticsService->getAppointmentStatusDistribution(),
+                'descriptive' => $this->analyticsService->getDescriptiveAnalytics(),
+                'top_firms' => $this->analyticsService->getTopPerformingFirms(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Appointment analytics error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Failed to load appointment analytics',
+                'message' => config('app.debug') ? $e->getMessage() : 'An error occurred'
+            ], 500);
+        }
     }
 
     /**
@@ -163,10 +174,20 @@ class AdminController extends Controller
      */
     public function distanceAnalytics(): JsonResponse
     {
-        return response()->json([
-            'average_distance' => $this->analyticsService->getAverageClientFirmDistance(),
-            'distribution' => $this->analyticsService->getDistanceDistribution(),
-        ]);
+        try {
+            return response()->json([
+                'average_distance' => $this->analyticsService->getAverageClientFirmDistance(),
+                'distribution' => $this->analyticsService->getDistanceDistribution(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Distance analytics error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Failed to load distance analytics',
+                'message' => config('app.debug') ? $e->getMessage() : 'An error occurred'
+            ], 500);
+        }
     }
 
     /**
