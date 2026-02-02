@@ -223,7 +223,7 @@ class AnalyticsService
             ->join('appointments', 'law_firms.id', '=', 'appointments.law_firm_id')
             ->where('appointments.status', 'completed')
             ->groupBy('law_firms.id', 'law_firms.firm_name')
-            ->orderByDesc('completed_count')
+            ->orderByRaw('COUNT(appointments.id) DESC')
             ->first();
 
         // Most rated (highest average rating with at least 1 rating)
@@ -231,9 +231,8 @@ class AnalyticsService
             ->select('law_firms.id', 'law_firms.firm_name', DB::raw('AVG(ratings.rating) as average_rating'), DB::raw('COUNT(ratings.id) as rating_count'))
             ->join('ratings', 'law_firms.id', '=', 'ratings.law_firm_id')
             ->groupBy('law_firms.id', 'law_firms.firm_name')
-            ->having('rating_count', '>', 0)
-            ->orderByDesc('average_rating')
-            ->orderByDesc('rating_count')
+            ->havingRaw('COUNT(ratings.id) > 0')
+            ->orderByRaw('AVG(ratings.rating) DESC, COUNT(ratings.id) DESC')
             ->first();
 
         // Top specialization - direct query from appointments
@@ -284,7 +283,7 @@ class AnalyticsService
             ->join('appointments', 'law_firms.id', '=', 'appointments.law_firm_id')
             ->where('appointments.status', 'completed')
             ->groupBy('law_firms.id', 'law_firms.firm_name')
-            ->orderByDesc('completed_appointments')
+            ->orderByRaw('COUNT(appointments.id) DESC')
             ->limit($limit)
             ->get();
     }
