@@ -85,6 +85,15 @@ secureStorage.removeItem('token');
 
 ## 🚀 Setup Instructions
 
+### Step 0: Important - Column Size Requirements
+
+⚠️ **CRITICAL for PostgreSQL/Production**: Encrypted data is significantly larger than plain text (typically 200-500+ characters). 
+
+**Before running encryption migration:**
+- The migration `2026_02_04_000000_expand_encrypted_columns.php` automatically expands columns from `VARCHAR(255)` to `TEXT`
+- This migration MUST run before `2026_02_04_000001_encrypt_sensitive_data.php`
+- Both migrations are included and will run in the correct order
+
 ### Step 1: Ensure APP_KEY is Set
 
 Laravel requires a strong application key for encryption:
