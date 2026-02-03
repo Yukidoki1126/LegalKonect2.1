@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\Encrypted;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,6 +24,9 @@ class Client extends Model
     protected $casts = [
         'latitude' => 'float',
         'longitude' => 'float',
+        // AES-256 encrypted sensitive fields
+        'phone' => Encrypted::class,
+        'address' => Encrypted::class,
     ];
 
     public function user(): BelongsTo

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\Encrypted;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,6 +43,12 @@ class LawFirm extends Model
         'verified_at' => 'datetime',
         'gallery_images' => 'array',
         'lawyers' => 'array',
+        // AES-256 encrypted sensitive fields
+        'license_number' => Encrypted::class,
+        'phone' => Encrypted::class,
+        'address' => Encrypted::class,
+        'contact_person_phone' => Encrypted::class,
+        'contact_person_email' => Encrypted::class,
     ];
 
     protected $appends = ['profile_image_url', 'gallery_images_urls'];

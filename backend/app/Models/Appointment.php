@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\Encrypted;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +25,9 @@ class Appointment extends Model
     protected $casts = [
         'scheduled_at' => 'datetime',
         'duration_minutes' => 'integer',
+        // AES-256 encrypted sensitive fields
+        'notes' => Encrypted::class,
+        'cancellation_reason' => Encrypted::class,
     ];
 
     public function client(): BelongsTo
