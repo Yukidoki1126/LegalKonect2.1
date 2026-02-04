@@ -63,7 +63,7 @@ export default function DashboardModern() {
         }, 60000);
 
         return () => clearInterval(refreshInterval);
-    }, [user?.client?.latitude, user?.client?.longitude]);
+    }, [user?.client?.latitude, user?.client?.longitude, user?.client?.specializations]);
 
     const handleViewFirm = async (id: number) => {
         try {
@@ -82,7 +82,63 @@ export default function DashboardModern() {
     const loadRecommendations = async () => {
         try {
             const data = await api.getRecommendations();
-            setRecommendations(data);
+            
+            // Filter to only show law firms that have at least one matching specialization
+            // when the client has specialization preferences set
+            let filteredData = data;
+            if (user?.client?.specializations && user.client.specializations.length > 0) {
+                filteredData = data.filter((rec: Recommendation) => 
+                    rec.matching_specializations && rec.matching_specializations.length > 0
+                );
+                
+                // Apply 60% match score threshold - only show firms with 60% or higher match
+                const MATCH_SCORE_THRESHOLD = 60;
+                filteredData = filteredData.filter((rec: Recommendation) => {
+                    // Calculate match score inline for filtering
+                    let totalScore = 0;
+                    
+                    // 1. Specialization Match (40% weight)
+                    const matchCount = rec.matching_specializations.length;
+                    const totalPreferences = user.client!.specializations!.length;
+                    const specializationScore = (matchCount / totalPreferences) * 100 * 0.4;
+                    
+                    // 2. Distance Score (20% weight)
+                    let distanceScore = 0;
+                    if (rec.distance_km !== null && rec.distance_km !== undefined) {
+                        if (rec.distance_km <= 5) distanceScore = 20;
+                        else if (rec.distance_km <= 10) distanceScore = 16;
+                        else if (rec.distance_km <= 20) distanceScore = 12;
+                        else if (rec.distance_km <= 50) distanceScore = 8;
+                        else distanceScore = 4;
+                    } else {
+                        distanceScore = 10;
+                    }
+                    
+                    // 3. Rating Score (25% weight)
+                    let ratingScore = 0;
+                    if (rec.rating_count > 0 && rec.average_rating > 0) {
+                        ratingScore = (rec.average_rating / 5) * 100 * 0.25;
+                    }
+                    
+                    // 4. Experience Score (15% weight)
+                    let experienceScore = 0;
+                    const expRange = rec.law_firm.experience_range;
+                    if (expRange) {
+                        if (expRange.includes('20+') || expRange.includes('20 +')) experienceScore = 15;
+                        else if (expRange.includes('15-20') || expRange.includes('15 - 20')) experienceScore = 12;
+                        else if (expRange.includes('10-15') || expRange.includes('10 - 15')) experienceScore = 9;
+                        else if (expRange.includes('5-10') || expRange.includes('5 - 10')) experienceScore = 6;
+                        else experienceScore = 3;
+                    }
+                    
+                    totalScore = specializationScore + distanceScore + ratingScore + experienceScore;
+                    const matchScore = Math.round(Math.min(100, Math.max(0, totalScore)));
+                    
+                    return matchScore >= MATCH_SCORE_THRESHOLD;
+                });
+            }
+            
+            setRecommendations(filteredData);
         } catch {
             setError('Failed to load recommendations');
         } finally {
