@@ -32,8 +32,8 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5608,
                 'longitude' => 121.0194,
                 'specializations' => ['Family Law', 'Criminal Law', 'Immigration Law'],
-                'experience_range' => '20+ years',
-                'description' => 'Imperial Family Law Center is Metro Manila\'s leading family law firm. With over 20 years of experience, we provide compassionate and effective legal representation in divorce, custody, adoption, and all family law matters.',
+                'experience_range' => '10+ years',
+                'description' => 'Imperial Family Law Center is Metro Manila\'s leading family law firm. With over 10 years of experience, we provide compassionate and effective legal representation in divorce, custody, adoption, and all family law matters.',
             ],
             [
                 'firm_name' => 'Metro Corporate Law Group',
@@ -46,7 +46,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5561,
                 'longitude' => 121.0242,
                 'specializations' => ['Corporate Law', 'Tax Law', 'Labor Law'],
-                'experience_range' => '20+ years',
+                'experience_range' => '10+ years',
                 'description' => 'Metro Corporate Law Group specializes in corporate transactions, business formations, and commercial law. We serve startups to Fortune 500 companies with expert legal counsel and strategic business advice.',
             ],
             [
@@ -60,7 +60,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5573,
                 'longitude' => 121.0231,
                 'specializations' => ['Real Estate Law', 'Corporate Law', 'Tax Law'],
-                'experience_range' => '15-20 years',
+                'experience_range' => '8-10 years',
                 'description' => 'Prime Real Estate Legal Services is the premier choice for property law matters. We handle residential and commercial transactions, property disputes, zoning, and all aspects of real estate law with precision and expertise.',
             ],
             [
@@ -74,7 +74,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5555,
                 'longitude' => 121.0248,
                 'specializations' => ['Family Law', 'Real Estate Law', 'Criminal Law'],
-                'experience_range' => '15-20 years',
+                'experience_range' => '8-10 years',
                 'description' => 'Stellar Family & Estate Law provides comprehensive legal services for families and individuals. From family disputes to estate planning and property matters, we protect your interests with dedication and skill.',
             ],
             [
@@ -88,7 +88,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5501,
                 'longitude' => 121.0503,
                 'specializations' => ['Corporate Law', 'Intellectual Property', 'Tax Law'],
-                'experience_range' => '10-15 years',
+                'experience_range' => '5-8 years',
                 'description' => 'BGC Corporate Partners is a modern law firm serving innovative businesses. We provide cutting-edge legal solutions in corporate law, IP protection, and tax compliance for companies in BGC and beyond.',
             ],
             [
@@ -102,8 +102,8 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5567,
                 'longitude' => 121.0253,
                 'specializations' => ['Real Estate Law', 'Family Law', 'Corporate Law'],
-                'experience_range' => '20+ years',
-                'description' => 'Heritage Property Law Firm has been serving Metro Manila for over two decades. We specialize in complex property transactions, family estate planning, and corporate real estate matters.',
+                'experience_range' => '10+ years',
+                'description' => 'Heritage Property Law Firm has been serving Metro Manila for over a decade. We specialize in complex property transactions, family estate planning, and corporate real estate matters.',
             ],
             [
                 'firm_name' => 'Ortigas Family Law Associates',
@@ -116,7 +116,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5863,
                 'longitude' => 121.0585,
                 'specializations' => ['Family Law', 'Labor Law', 'Immigration Law'],
-                'experience_range' => '15-20 years',
+                'experience_range' => '8-10 years',
                 'description' => 'Ortigas Family Law Associates is dedicated to protecting families in Metro Manila. We provide expert representation in all family law matters with compassion, integrity, and proven results.',
             ],
             [
@@ -130,7 +130,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5541,
                 'longitude' => 121.0239,
                 'specializations' => ['Corporate Law', 'Real Estate Law', 'Tax Law'],
-                'experience_range' => '20+ years',
+                'experience_range' => '10+ years',
                 'description' => 'Capital Corporate Lawyers provides comprehensive business legal services. With expertise in corporate governance, property transactions, and tax planning, we are the trusted advisors to major corporations.',
             ],
             [
@@ -144,7 +144,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5729,
                 'longitude' => 120.9827,
                 'specializations' => ['Real Estate Law', 'Corporate Law', 'Family Law'],
-                'experience_range' => '15-20 years',
+                'experience_range' => '8-10 years',
                 'description' => 'Manila Bay Real Estate Law specializes in waterfront properties, condominium law, and commercial real estate. We serve developers, investors, and families with expert property legal services.',
             ],
             [
@@ -158,7 +158,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.6298,
                 'longitude' => 121.0339,
                 'specializations' => ['Family Law', 'Criminal Law', 'Labor Law'],
-                'experience_range' => '10-15 years',
+                'experience_range' => '5-8 years',
                 'description' => 'Quezon City Family Legal Center provides accessible family law services to QC residents. We handle divorce, child support, custody, and domestic relations with dedication and expertise.',
             ],
 
@@ -174,8 +174,8 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 7.0731,
                 'longitude' => 125.6122,
                 'specializations' => ['Corporate Law', 'Real Estate Law', 'Family Law'],
-                'experience_range' => '20+ years',
-                'description' => 'Sudagar Law Office is one of Davao City\'s premier law firms, providing comprehensive legal services to individuals and businesses. With over two decades of experience, we are committed to delivering excellence in legal representation.',
+                'experience_range' => '10+ years',
+                'description' => 'Sudagar Law Office is one of Davao City\'s premier law firms, providing comprehensive legal services to individuals and businesses. With over a decade of experience, we are committed to delivering excellence in legal representation.',
             ],
             [
                 'firm_name' => 'Cabanero Law Office',
@@ -188,7 +188,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 7.0644,
                 'longitude' => 125.6085,
                 'specializations' => ['Criminal Law', 'Labor Law', 'Human Rights'],
-                'experience_range' => '15-20 years',
+                'experience_range' => '8-10 years',
                 'description' => 'Cabanero Law Office specializes in criminal defense and labor law matters. We are dedicated to protecting the rights of our clients with integrity and professionalism.',
             ],
             [
@@ -202,7 +202,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 7.0764,
                 'longitude' => 125.6147,
                 'specializations' => ['Tax Law', 'Banking & Finance', 'Corporate Law'],
-                'experience_range' => '10-15 years',
+                'experience_range' => '5-8 years',
                 'description' => 'Zamora Law Office provides expert legal counsel in taxation and financial matters. Our team ensures compliance and strategic planning for businesses throughout Mindanao.',
             ],
             [
@@ -216,7 +216,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 7.0907,
                 'longitude' => 125.6275,
                 'specializations' => ['Family Law', 'Immigration Law', 'Real Estate Law'],
-                'experience_range' => '15-20 years',
+                'experience_range' => '8-10 years',
                 'description' => 'Caubang Law Office is known for compassionate and effective representation in family law matters. We help families navigate legal challenges with sensitivity and expertise.',
             ],
             [
@@ -230,7 +230,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 7.0789,
                 'longitude' => 125.6189,
                 'specializations' => ['Intellectual Property', 'Technology Law', 'Corporate Law'],
-                'experience_range' => '5-10 years',
+                'experience_range' => '3-5 years',
                 'description' => 'Angeles Law Office specializes in intellectual property and technology law, serving startups and established businesses in Davao and beyond. We protect innovation and creativity.',
             ],
             [
@@ -244,7 +244,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 7.0731,
                 'longitude' => 125.6050,
                 'specializations' => ['Environmental Law', 'Corporate Law', 'Real Estate Law'],
-                'experience_range' => '20+ years',
+                'experience_range' => '10+ years',
                 'description' => 'Guinomla Law Firm is a leading advocate for environmental protection and sustainable development. We provide comprehensive legal services for environmental compliance and land use matters.',
             ],
             [
@@ -258,7 +258,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 7.0682,
                 'longitude' => 125.6095,
                 'specializations' => ['Labor Law', 'Criminal Law', 'Civil Law'],
-                'experience_range' => '10-15 years',
+                'experience_range' => '5-8 years',
                 'description' => 'Latog Law Office provides dedicated legal representation in labor disputes and civil matters. We fight for the rights of workers and individuals throughout Davao region.',
             ],
             [
@@ -272,7 +272,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 7.0920,
                 'longitude' => 125.6301,
                 'specializations' => ['Corporate Law', 'Banking & Finance', 'Tax Law'],
-                'experience_range' => '15-20 years',
+                'experience_range' => '8-10 years',
                 'description' => 'Bajenting Law Office offers expert legal services in corporate and commercial law. We assist businesses with legal compliance, transactions, and strategic planning throughout Mindanao.',
             ],
 
@@ -290,7 +290,7 @@ class LawFirmSeeder extends Seeder
                 'latitude' => 14.5995, // Use Google Maps to get coordinates
                 'longitude' => 120.9842,
                 'specializations' => ['Specialization 1', 'Specialization 2'], // Must match existing names
-                'experience_range' => '10-15 years', // Options: '<5 years', '5-10 years', '10-15 years', '15-20 years', '20+ years'
+                'experience_range' => '5-8 years', // Options: '1-3 years', '3-5 years', '5-8 years', '8-10 years', '10+ years'
                 'description' => 'Your firm description here...',
             ],
             */

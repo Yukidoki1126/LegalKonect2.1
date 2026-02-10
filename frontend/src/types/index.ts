@@ -17,6 +17,9 @@ export interface Client {
   longitude: number | null;
   address: string | null;
   phone: string | null;
+  preferred_min_rating: number | null;
+  preferred_max_distance: number | null;
+  preferred_experience: string | null;
   created_at: string;
   updated_at: string;
   specializations?: Specialization[];

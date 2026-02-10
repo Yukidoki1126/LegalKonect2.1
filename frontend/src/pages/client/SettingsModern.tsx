@@ -29,7 +29,11 @@ import {
     Map,
     Lock,
     Key,
-    Loader2
+    Loader2,
+    Star,
+    Navigation,
+    Briefcase,
+    SlidersHorizontal
 } from 'lucide-react';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -45,6 +49,9 @@ export default function SettingsModern() {
         latitude: null as number | null,
         longitude: null as number | null,
         specialization_ids: [] as number[],
+        preferred_min_rating: null as number | null,
+        preferred_max_distance: null as number | null,
+        preferred_experience: null as string | null,
     });
     const [specializations, setSpecializations] = useState<Specialization[]>([]);
     const [loading, setLoading] = useState(true);
@@ -52,6 +59,7 @@ export default function SettingsModern() {
     const [message, setMessage] = useState({ type: '', text: '' });
     const [showMapModal, setShowMapModal] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [passwordForm, setPasswordForm] = useState({
         current_password: '',
         new_password: '',
@@ -88,6 +96,9 @@ export default function SettingsModern() {
                 latitude: profile.latitude,
                 longitude: profile.longitude,
                 specialization_ids: profile.specializations?.map(s => s.id) || [],
+                preferred_min_rating: profile.preferred_min_rating,
+                preferred_max_distance: profile.preferred_max_distance,
+                preferred_experience: profile.preferred_experience,
             });
             setSpecializations(specs);
         } catch {
@@ -161,6 +172,9 @@ export default function SettingsModern() {
                 phone: formData.phone,
                 address: formData.address,
                 specialization_ids: formData.specialization_ids,
+                preferred_min_rating: formData.preferred_min_rating,
+                preferred_max_distance: formData.preferred_max_distance,
+                preferred_experience: formData.preferred_experience,
             });
 
             if (formData.latitude && formData.longitude) {
@@ -176,6 +190,7 @@ export default function SettingsModern() {
             setUser(userData);
 
             setMessage({ type: 'success', text: 'Profile updated successfully!' });
+            setShowSuccessModal(true);
         } catch {
             setMessage({ type: 'error', text: 'Failed to update profile.' });
         } finally {
@@ -219,6 +234,7 @@ export default function SettingsModern() {
                 confirm_password: ''
             });
             setPasswordError('');
+            setShowSuccessModal(true);
         } catch (error: unknown) {
             const err = error as { response?: { data?: { message?: string; errors?: { current_password?: string[] } } } };
             // Check for validation errors first
@@ -278,19 +294,13 @@ export default function SettingsModern() {
                     </div>
                 </div>
 
-                {message.text && (
-                    <Card className={message.type === 'error' ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800' : 'border-cyan-300 bg-cyan-50 dark:bg-cyan-900/20 dark:border-cyan-800'}>
+                {message.text && message.type === 'error' && (
+                    <Card className='border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800'>
                         <CardContent className="flex items-center gap-3 pt-6">
-                            {message.type === 'success' ? (
-                                <div className="p-2 rounded-full bg-cyan-100 dark:bg-cyan-900/50">
-                                    <CheckCircle className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
-                                </div>
-                            ) : (
-                                <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/50">
-                                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                                </div>
-                            )}
-                            <p className={message.type === 'error' ? 'text-red-700 dark:text-red-300 font-medium' : 'text-cyan-700 dark:text-cyan-300 font-medium'}>
+                            <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/50">
+                                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <p className='text-red-700 dark:text-red-300 font-medium'>
                                 {message.text}
                             </p>
                         </CardContent>
@@ -442,6 +452,153 @@ export default function SettingsModern() {
                                     </div>
                                 ))}
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Recommendation Preferences */}
+                    <Card className="hover:shadow-lg transition-shadow duration-300">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-3 text-foreground">
+                                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
+                                    <SlidersHorizontal className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                Recommendation Preferences
+                            </CardTitle>
+                            <CardDescription>
+                                Set your preferred minimum rating, maximum distance, and experience level for law firm recommendations
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {/* Minimum Rating */}
+                            <div className="space-y-3">
+                                <Label className="flex items-center gap-2 text-sm font-medium">
+                                    <Star className="h-4 w-4 text-amber-500" />
+                                    Minimum Rating
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Only show law firms with at least this rating
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        { value: null, label: 'Any Rating' },
+                                        { value: 3.0, label: '3.0+' },
+                                        { value: 3.5, label: '3.5+' },
+                                        { value: 4.0, label: '4.0+' },
+                                        { value: 4.5, label: '4.5+' },
+                                    ].map((option) => (
+                                        <button
+                                            key={option.label}
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, preferred_min_rating: option.value }))}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                                                formData.preferred_min_rating === option.value
+                                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white border-transparent shadow-md shadow-blue-500/25'
+                                                    : 'bg-background text-foreground border-border hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                            }`}
+                                        >
+                                            {option.value !== null && (
+                                                <Star className="inline h-3.5 w-3.5 mr-1 -mt-0.5 fill-current" />
+                                            )}
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Maximum Distance */}
+                            <div className="space-y-3">
+                                <Label className="flex items-center gap-2 text-sm font-medium">
+                                    <Navigation className="h-4 w-4 text-green-500" />
+                                    Maximum Distance
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Only show law firms within this distance from your location
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        { value: null, label: 'Any Distance' },
+                                        { value: 5, label: '5 km' },
+                                        { value: 10, label: '10 km' },
+                                        { value: 20, label: '20 km' },
+                                        { value: 50, label: '50 km' },
+                                        { value: 100, label: '100 km' },
+                                    ].map((option) => (
+                                        <button
+                                            key={option.label}
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, preferred_max_distance: option.value }))}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                                                formData.preferred_max_distance === option.value
+                                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white border-transparent shadow-md shadow-blue-500/25'
+                                                    : 'bg-background text-foreground border-border hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                            }`}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Preferred Experience */}
+                            <div className="space-y-3">
+                                <Label className="flex items-center gap-2 text-sm font-medium">
+                                    <Briefcase className="h-4 w-4 text-purple-500" />
+                                    Preferred Experience
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Only show law firms with this experience level
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        { value: null, label: 'Any Experience' },
+                                        { value: '1-3', label: '1 – 3 years' },
+                                        { value: '3-5', label: '3 – 5 years' },
+                                        { value: '5-8', label: '5 – 8 years' },
+                                        { value: '8-10', label: '8 – 10 years' },
+                                        { value: '10+', label: '10+ years' },
+                                    ].map((option) => (
+                                        <button
+                                            key={option.label}
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, preferred_experience: option.value }))}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                                                formData.preferred_experience === option.value
+                                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white border-transparent shadow-md shadow-blue-500/25'
+                                                    : 'bg-background text-foreground border-border hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                            }`}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Summary */}
+                            {(formData.preferred_min_rating || formData.preferred_max_distance || formData.preferred_experience) && (
+                                <div className="p-4 rounded-lg bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800">
+                                    <p className="text-sm font-medium text-foreground mb-2">Your Preferences Summary</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {formData.preferred_min_rating && (
+                                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                                                <Star className="h-3 w-3 mr-1 fill-current" />
+                                                {formData.preferred_min_rating}+ rating
+                                            </Badge>
+                                        )}
+                                        {formData.preferred_max_distance && (
+                                            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                <Navigation className="h-3 w-3 mr-1" />
+                                                Within {formData.preferred_max_distance} km
+                                            </Badge>
+                                        )}
+                                        {formData.preferred_experience && (
+                                            <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                                                <Briefcase className="h-3 w-3 mr-1" />
+                                                {formData.preferred_experience === '10+' ? '10+ years' : `${formData.preferred_experience} years`}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -600,6 +757,33 @@ export default function SettingsModern() {
                                 </Button>
                             </div>
                         </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Success Modal */}
+                <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <div className="flex items-center justify-center mb-4">
+                                <div className="p-3 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30">
+                                    <CheckCircle className="h-12 w-12 text-cyan-600 dark:text-cyan-400" />
+                                </div>
+                            </div>
+                            <DialogTitle className="text-center text-2xl text-foreground">
+                                Success!
+                            </DialogTitle>
+                            <DialogDescription className="text-center text-foreground pt-2">
+                                {message.text || 'Your changes have been saved successfully.'}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="sm:justify-center">
+                            <Button 
+                                onClick={() => setShowSuccessModal(false)} 
+                                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-lg shadow-blue-500/25 text-white"
+                            >
+                                Got it, thanks!
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>

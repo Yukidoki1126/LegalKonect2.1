@@ -55,7 +55,8 @@ class RecommendationService
 
             // Calculate scores
             $distanceScore = $this->normalizeDistance($distance);
-            $ratingScore = $this->normalizeRating($firm->ratings->avg('rating') ?? 0, $firm->ratings->count());
+            $averageRating = round($firm->ratings->avg('rating') ?? 0, 1);
+            $ratingScore = $this->normalizeRating($averageRating, $firm->ratings->count());
             $ratingCount = $firm->ratings->count();
             $specializationScore = $this->calculateSpecializationMatch(
                 $firm->specializations->pluck('id')->toArray(),
@@ -72,7 +73,7 @@ class RecommendationService
             return [
                 'law_firm' => $firm,
                 'distance_km' => round($distance, 2),
-                'average_rating' => round($firm->ratings->avg('rating') ?? 0, 1),
+                'average_rating' => $averageRating,
                 'rating_count' => $ratingCount,
                 'specialization_match' => $specializationScore > 0,
                 'matching_specializations' => $firm->specializations
@@ -87,8 +88,55 @@ class RecommendationService
                 'total_score' => round($totalScore, 4),
             ];
         })
+            // Filter by client preferences
+            ->when($client->preferred_min_rating, function ($collection) use ($client) {
+                return $collection->filter(function ($item) use ($client) {
+                    // Keep firms with no ratings or firms meeting the minimum rating
+                    return $item['rating_count'] === 0 || $item['average_rating'] >= $client->preferred_min_rating;
+                });
+            })
+            ->when($client->preferred_max_distance, function ($collection) use ($client) {
+                return $collection->filter(function ($item) use ($client) {
+                    // Keep firms within the max distance (0 distance means no location data, keep those)
+                    return $item['distance_km'] == 0 || $item['distance_km'] <= $client->preferred_max_distance;
+                });
+            })
+            ->when($client->preferred_experience, function ($collection) use ($client) {
+                return $collection->filter(function ($item) use ($client) {
+                    $firmExperience = $item['law_firm']->experience_range;
+                    // Keep firms with no experience data
+                    if (empty($firmExperience)) {
+                        return true;
+                    }
+                    $firmLevel = $this->experienceToLevel($firmExperience);
+                    $preferredLevel = $this->experienceToLevel($client->preferred_experience);
+                    return $firmLevel === $preferredLevel;
+                });
+            })
             ->sortByDesc('total_score')
             ->values();
+    }
+
+    /**
+     * Convert experience range string to a numeric level for comparison
+     */
+    private function experienceToLevel(?string $experienceRange): int
+    {
+        if (empty($experienceRange)) {
+            return 0;
+        }
+
+        if (str_contains($experienceRange, '10+') || str_contains($experienceRange, '10 +')) {
+            return 5;
+        } elseif (str_contains($experienceRange, '8-10') || str_contains($experienceRange, '8 - 10')) {
+            return 4;
+        } elseif (str_contains($experienceRange, '5-8') || str_contains($experienceRange, '5 - 8')) {
+            return 3;
+        } elseif (str_contains($experienceRange, '3-5') || str_contains($experienceRange, '3 - 5')) {
+            return 2;
+        } else {
+            return 1; // 1-3 years
+        }
     }
 
     /**
@@ -124,6 +172,7 @@ class RecommendationService
 
     /**
      * Normalize experience score based on years of experience (0-1)
+     * 8+ years is considered peak experience for practical legal work
      */
     private function normalizeExperience(?string $experienceRange): float
     {
@@ -131,17 +180,17 @@ class RecommendationService
             return 0;    // No experience data = 0 (transparent scoring)
         }
         
-        // Score based on experience range
-        if (str_contains($experienceRange, '20+') || str_contains($experienceRange, '20 +')) {
-            return 1.0;    // 20+ years = full score
-        } elseif (str_contains($experienceRange, '15-20') || str_contains($experienceRange, '15 - 20')) {
-            return 0.8;    // 15-20 years = 80%
-        } elseif (str_contains($experienceRange, '10-15') || str_contains($experienceRange, '10 - 15')) {
-            return 0.6;    // 10-15 years = 60%
-        } elseif (str_contains($experienceRange, '5-10') || str_contains($experienceRange, '5 - 10')) {
-            return 0.4;    // 5-10 years = 40%
+        // Score based on experience range — 8+ years is realistically max
+        if (str_contains($experienceRange, '8-10') || str_contains($experienceRange, '8 - 10')) {
+            return 1.0;    // 8-10 years = full score (peak experience)
+        } elseif (str_contains($experienceRange, '10+') || str_contains($experienceRange, '10 +')) {
+            return 1.0;    // 10+ years = full score
+        } elseif (str_contains($experienceRange, '5-8') || str_contains($experienceRange, '5 - 8')) {
+            return 0.8;    // 5-8 years = 80%
+        } elseif (str_contains($experienceRange, '3-5') || str_contains($experienceRange, '3 - 5')) {
+            return 0.6;    // 3-5 years = 60%
         } else {
-            return 0.2;    // Less than 5 years = 20%
+            return 0.4;    // 1-3 years = 40%
         }
     }
 

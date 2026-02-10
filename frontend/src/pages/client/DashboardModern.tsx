@@ -120,15 +120,15 @@ export default function DashboardModern() {
                         ratingScore = (rec.average_rating / 5) * 100 * 0.25;
                     }
                     
-                    // 4. Experience Score (15% weight)
+                    // 4. Experience Score (15% weight) — 8+ years = full score
                     let experienceScore = 0;
                     const expRange = rec.law_firm.experience_range;
                     if (expRange) {
-                        if (expRange.includes('20+') || expRange.includes('20 +')) experienceScore = 15;
-                        else if (expRange.includes('15-20') || expRange.includes('15 - 20')) experienceScore = 12;
-                        else if (expRange.includes('10-15') || expRange.includes('10 - 15')) experienceScore = 9;
-                        else if (expRange.includes('5-10') || expRange.includes('5 - 10')) experienceScore = 6;
-                        else experienceScore = 3;
+                        if (expRange.includes('8-10') || expRange.includes('8 - 10')) experienceScore = 15;
+                        else if (expRange.includes('10+') || expRange.includes('10 +')) experienceScore = 15;
+                        else if (expRange.includes('5-8') || expRange.includes('5 - 8')) experienceScore = 12;
+                        else if (expRange.includes('3-5') || expRange.includes('3 - 5')) experienceScore = 9;
+                        else experienceScore = 6;
                     }
                     
                     totalScore = specializationScore + distanceScore + ratingScore + experienceScore;
@@ -243,21 +243,21 @@ export default function DashboardModern() {
         }
         // No reviews = 0 points (transparent scoring)
         
-        // 4. Experience Score (15% weight) - based on years of experience
+        // 4. Experience Score (15% weight) — 8+ years = full score
         let experienceScore = 0;
         const expRange = rec.law_firm.experience_range;
         if (expRange) {
-            // Score based on experience range
-            if (expRange.includes('20+') || expRange.includes('20 +')) {
-                experienceScore = 15; // 20+ years = full score
-            } else if (expRange.includes('15-20') || expRange.includes('15 - 20')) {
-                experienceScore = 12; // 15-20 years = 80%
-            } else if (expRange.includes('10-15') || expRange.includes('10 - 15')) {
-                experienceScore = 9; // 10-15 years = 60%
-            } else if (expRange.includes('5-10') || expRange.includes('5 - 10')) {
-                experienceScore = 6; // 5-10 years = 40%
+            // Score based on experience range — 8+ years is realistically max
+            if (expRange.includes('8-10') || expRange.includes('8 - 10')) {
+                experienceScore = 15; // 8-10 years = full score (peak)
+            } else if (expRange.includes('10+') || expRange.includes('10 +')) {
+                experienceScore = 15; // 10+ years = full score
+            } else if (expRange.includes('5-8') || expRange.includes('5 - 8')) {
+                experienceScore = 12; // 5-8 years = 80%
+            } else if (expRange.includes('3-5') || expRange.includes('3 - 5')) {
+                experienceScore = 9; // 3-5 years = 60%
             } else {
-                experienceScore = 3; // Less than 5 years = 20%
+                experienceScore = 6; // 1-3 years = 40%
             }
         }
         // No experience data = 0 points (transparent scoring)

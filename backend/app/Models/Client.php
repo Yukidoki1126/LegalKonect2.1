@@ -19,11 +19,16 @@ class Client extends Model
         'longitude',
         'address',
         'phone',
+        'preferred_min_rating',
+        'preferred_max_distance',
+        'preferred_experience',
     ];
 
     protected $casts = [
         'latitude' => 'float',
         'longitude' => 'float',
+        'preferred_min_rating' => 'float',
+        'preferred_max_distance' => 'integer',
         // AES-256 encrypted sensitive fields
         'phone' => Encrypted::class,
         'address' => Encrypted::class,

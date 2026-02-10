@@ -144,6 +144,9 @@ class ApiService {
         phone?: string;
         address?: string;
         specialization_ids?: number[];
+        preferred_min_rating?: number | null;
+        preferred_max_distance?: number | null;
+        preferred_experience?: string | null;
     }): Promise<{ message: string; client: Client }> {
         const response = await this.api.put('/client/profile', data);
         return response.data;

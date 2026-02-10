@@ -43,6 +43,9 @@ class ClientController extends Controller
             'address' => 'nullable|string|max:255',
             'specialization_ids' => 'nullable|array',
             'specialization_ids.*' => 'exists:specializations,id',
+            'preferred_min_rating' => 'nullable|numeric|min:0|max:5',
+            'preferred_max_distance' => 'nullable|integer|min:1|max:500',
+            'preferred_experience' => 'nullable|string|in:any,1-3,3-5,5-8,8-10,10+',
         ]);
 
         $user = $request->user();
@@ -55,6 +58,9 @@ class ClientController extends Controller
         $client->update([
             'phone' => $validated['phone'] ?? $client->phone,
             'address' => $validated['address'] ?? $client->address,
+            'preferred_min_rating' => array_key_exists('preferred_min_rating', $validated) ? $validated['preferred_min_rating'] : $client->preferred_min_rating,
+            'preferred_max_distance' => array_key_exists('preferred_max_distance', $validated) ? $validated['preferred_max_distance'] : $client->preferred_max_distance,
+            'preferred_experience' => array_key_exists('preferred_experience', $validated) ? $validated['preferred_experience'] : $client->preferred_experience,
         ]);
 
         if (isset($validated['specialization_ids'])) {
