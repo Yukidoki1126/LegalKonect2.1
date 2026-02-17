@@ -31,6 +31,7 @@ import {
     Building2,
     AlertCircle,
     ChevronDown,
+    ChevronUp,
     Scale,
     Sparkles
 } from 'lucide-react';
@@ -53,6 +54,7 @@ export default function DashboardModern() {
     const [bookingLoading, setBookingLoading] = useState(false);
     const [bookingMessage, setBookingMessage] = useState({ type: '', text: '' });
     const [showScoreDetails, setShowScoreDetails] = useState(false);
+    const [showAllFirms, setShowAllFirms] = useState(false);
 
     useEffect(() => {
         loadRecommendations();
@@ -143,6 +145,7 @@ export default function DashboardModern() {
             setError('Failed to load recommendations');
         } finally {
             setLoading(false);
+            setShowAllFirms(false); // Reset to show top 3 when data refreshes
         }
     };
 
@@ -361,9 +364,15 @@ export default function DashboardModern() {
                                 </div>
                                 <div>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-sm text-slate-600 dark:text-slate-400">Found</span>
-                                        <span className="text-2xl font-bold text-slate-900 dark:text-white">{recommendations.length}</span>
-                                        <span className="text-sm text-slate-600 dark:text-slate-400">law firms</span>
+                                        <span className="text-sm text-slate-600 dark:text-slate-400">
+                                            {showAllFirms ? 'Found' : 'Showing Top'}
+                                        </span>
+                                        <span className="text-2xl font-bold text-slate-900 dark:text-white">
+                                            {showAllFirms ? recommendations.length : Math.min(3, recommendations.length)}
+                                        </span>
+                                        <span className="text-sm text-slate-600 dark:text-slate-400">
+                                            {showAllFirms && recommendations.length > 3 ? `of ${recommendations.length} ` : ''}law firms
+                                        </span>
                                     </div>
                                     <p className="text-xs text-slate-500">Ranked by match score and proximity</p>
                                 </div>
@@ -386,7 +395,7 @@ export default function DashboardModern() {
 
                         {/* Cards Grid */}
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {recommendations.map((rec, index) => {
+                            {(showAllFirms ? recommendations : recommendations.slice(0, 3)).map((rec, index) => {
                                 const matchScore = calculateMatchScore(rec);
                                 return (
                                     <LawFirmCard
@@ -402,6 +411,39 @@ export default function DashboardModern() {
                                 );
                             })}
                         </div>
+
+                        {/* View More Button */}
+                        {!showAllFirms && recommendations.length > 3 && (
+                            <div className="flex justify-center pt-4">
+                                <Button
+                                    onClick={() => setShowAllFirms(true)}
+                                    variant="outline"
+                                    size="lg"
+                                    className="gap-2 px-8 py-6 text-base font-medium text-slate-700 dark:text-slate-200 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 dark:border-blue-800 dark:hover:border-blue-700 dark:hover:bg-blue-900/20 transition-all"
+                                >
+                                    <Sparkles className="h-5 w-5" />
+                                    View Other Law Firms (60%+ Match)
+                                    <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                                        +{recommendations.length - 3} more
+                                    </Badge>
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Show Less Button */}
+                        {showAllFirms && recommendations.length > 3 && (
+                            <div className="flex justify-center pt-4">
+                                <Button
+                                    onClick={() => setShowAllFirms(false)}
+                                    variant="outline"
+                                    size="lg"
+                                    className="gap-2 px-8 py-6 text-base font-medium text-slate-700 dark:text-slate-200 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800/20 transition-all"
+                                >
+                                    <ChevronUp className="h-5 w-5" />
+                                    Show Top 3 Only
+                                </Button>
+                            </div>
+                        )}
                     </>
                 )}
 
