@@ -1,10 +1,5 @@
 <?php
 
-// Parse CORS_ALLOWED_ORIGINS from environment variable
-$corsOrigins = env('CORS_ALLOWED_ORIGINS') 
-    ? explode(',', env('CORS_ALLOWED_ORIGINS')) 
-    : [];
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -12,19 +7,20 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', '*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_filter(array_merge([
+    'allowed_origins' => [
         'http://localhost:5173',
         'http://localhost:5174',
         'http://localhost:3000',
         'http://127.0.0.1:5173',
         'http://127.0.0.1:5174',
         'http://127.0.0.1:3000',
-        env('FRONTEND_URL'),
-    ], $corsOrigins)),
+        'https://legalkonect.site',
+        'https://www.legalkonect.site',
+    ],
 
     'allowed_origins_patterns' => [
         '#^https://.*\.vercel\.app$#',

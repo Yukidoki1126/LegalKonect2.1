@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,12 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Add HandleCors to global middleware (runs first, before any other middleware)
+        $middleware->prepend(HandleCors::class);
+        
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
             'law_firm.approved' => \App\Http\Middleware\CheckLawFirmApproved::class,
         ]);
 
-        // $middleware->statefulApi();
+        $middleware->statefulApi();
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
