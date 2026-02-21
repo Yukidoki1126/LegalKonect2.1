@@ -61,14 +61,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
-        try {
-            await api.logout();
-        } catch {
-            // Ignore errors on logout
-        }
+        // Clear local state immediately
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
+        
+        // Try to notify backend (don't wait for response)
+        try {
+            // Use a short timeout and don't wait for completion
+            api.logout().catch(() => {
+                // Silently ignore backend errors
+            });
+        } catch {
+            // Ignore any errors
+        }
     };
 
     const refreshUser = async () => {

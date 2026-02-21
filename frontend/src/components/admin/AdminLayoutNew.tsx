@@ -13,13 +13,16 @@ import {
     Menu,
     FileSearch,
     Sun,
-    Moon
+    Moon,
+    Users,
+    MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
+import logo from '@/assets/legalkonect.png';
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -31,10 +34,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [pendingCount, setPendingCount] = useState<number>(0);
+    const [unreadMsgCount, setUnreadMsgCount] = useState<number>(0);
 
     useEffect(() => {
         loadPendingCount();
-        const interval = setInterval(loadPendingCount, 30000);
+        loadUnreadMsgCount();
+        const interval = setInterval(() => {
+            loadPendingCount();
+            loadUnreadMsgCount();
+        }, 15000);
         return () => clearInterval(interval);
     }, []);
 
@@ -44,6 +52,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             setPendingCount(pending.length);
         } catch {
             console.error('Failed to load pending count');
+        }
+    };
+
+    const loadUnreadMsgCount = async () => {
+        try {
+            const data = await api.getUnreadContactCount();
+            setUnreadMsgCount(data.count);
+        } catch {
+            console.error('Failed to load unread message count');
         }
     };
 
@@ -76,6 +93,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             icon: TrendingUp,
             label: 'Analytics',
             badge: null
+        },
+        {
+            to: '/admin/users',
+            icon: Users,
+            label: 'User Management',
+            badge: null
+        },
+        {
+            to: '/admin/contact-messages',
+            icon: MessageSquare,
+            label: 'Contact Messages',
+            badge: unreadMsgCount > 0 ? unreadMsgCount.toString() : null
         }
     ];
 
@@ -89,9 +118,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <div className="flex flex-col h-full">
                     {/* Logo */}
                     <div className="flex items-center gap-2 px-8 py-6 border-b border-border">
-                        <div className="p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg shadow-md shadow-blue-500/20">
-                            <Scale className="h-6 w-6 text-white" />
-                        </div>
+                        <img src={logo} alt="LegalKonect" className="h-10 w-10" />
                         <span className="text-xl font-bold text-foreground">LegalKonect</span>
                     </div>
 

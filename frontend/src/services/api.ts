@@ -59,6 +59,11 @@ class ApiService {
                     return Promise.reject(error);
                 }
 
+                // Don't retry logout requests - fail fast
+                if (config?.url?.includes('/auth/logout')) {
+                    return Promise.reject(error);
+                }
+
                 // Check if we should retry
                 const retryCount = config?.__retryCount || 0;
                 if (config && isRetryableError(error) && retryCount < MAX_RETRIES) {
@@ -118,7 +123,8 @@ class ApiService {
     }
 
     async logout(): Promise<void> {
-        await this.api.post('/auth/logout');
+        // Use shorter timeout for logout (5 seconds)
+        await this.api.post('/auth/logout', {}, { timeout: 5000 });
     }
 
     async getUser(): Promise<User> {
@@ -377,6 +383,43 @@ class ApiService {
         return response.data;
     }
 
+    // Admin User Management
+    async getAdminUsers(params?: { role?: string; search?: string; page?: number }): Promise<{
+        data: User[];
+        current_page: number;
+        last_page: number;
+        total: number;
+        per_page: number;
+    }> {
+        const searchParams = new URLSearchParams();
+        if (params?.role && params.role !== 'all') searchParams.append('role', params.role);
+        if (params?.search) searchParams.append('search', params.search);
+        if (params?.page) searchParams.append('page', params.page.toString());
+        const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
+        const response = await this.api.get(`/admin/users${query}`);
+        return response.data;
+    }
+
+    async getAdminUser(id: number): Promise<User> {
+        const response = await this.api.get(`/admin/users/${id}`);
+        return response.data;
+    }
+
+    async updateUserRole(id: number, role: string): Promise<{ message: string; user: User }> {
+        const response = await this.api.put(`/admin/users/${id}/role`, { role });
+        return response.data;
+    }
+
+    async deleteUser(id: number): Promise<{ message: string }> {
+        const response = await this.api.delete(`/admin/users/${id}`);
+        return response.data;
+    }
+
+    async resetUserPassword(id: number, password: string): Promise<{ message: string }> {
+        const response = await this.api.put(`/admin/users/${id}/reset-password`, { password });
+        return response.data;
+    }
+
     async changePassword(data: {
         current_password: string;
         new_password: string;
@@ -397,6 +440,93 @@ class ApiService {
         password_confirmation: string;
     }): Promise<{ message: string }> {
         const response = await this.api.post('/auth/reset-password', data);
+        return response.data;
+    }
+
+    // Contact form (public)
+    async submitContactMessage(data: {
+        name: string;
+        email: string;
+        category: string;
+        subject: string;
+        message: string;
+    }): Promise<{ message: string; id: number }> {
+        const response = await this.api.post('/contact', data);
+        return response.data;
+    }
+
+    // Admin Contact Messages
+    async getContactMessages(params?: { status?: string; search?: string; page?: number }): Promise<{
+        data: {
+            id: number;
+            name: string;
+            email: string;
+            category: string;
+            subject: string;
+            message: string;
+            status: string;
+            admin_notes: string | null;
+            admin_reply: string | null;
+            replied_at: string | null;
+            created_at: string;
+            updated_at: string;
+        }[];
+        current_page: number;
+        last_page: number;
+        total: number;
+        per_page: number;
+        unread_count: number;
+    }> {
+        const searchParams = new URLSearchParams();
+        if (params?.status && params.status !== 'all') searchParams.append('status', params.status);
+        if (params?.search) searchParams.append('search', params.search);
+        if (params?.page) searchParams.append('page', params.page.toString());
+        const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
+        const response = await this.api.get(`/admin/contact-messages${query}`);
+        return response.data;
+    }
+
+    async getContactMessage(id: number): Promise<{
+        id: number;
+        name: string;
+        email: string;
+        category: string;
+        subject: string;
+        message: string;
+        status: string;
+        admin_notes: string | null;
+        admin_reply: string | null;
+        replied_at: string | null;
+        created_at: string;
+        updated_at: string;
+    }> {
+        const response = await this.api.get(`/admin/contact-messages/${id}`);
+        return response.data;
+    }
+
+    async updateContactMessageStatus(id: number, status: string, adminNotes?: string): Promise<{ message: string }> {
+        const response = await this.api.put(`/admin/contact-messages/${id}/status`, {
+            status,
+            admin_notes: adminNotes,
+        });
+        return response.data;
+    }
+
+    async replyContactMessage(id: number, reply: string, adminNotes?: string): Promise<{ message: string; email_sent: boolean }> {
+        const response = await this.api.post(`/admin/contact-messages/${id}/reply`, {
+            reply,
+            admin_notes: adminNotes,
+        });
+        return response.data;
+    }
+
+    async deleteContactMessage(id: number): Promise<{ message: string }> {
+        const response = await this.api.delete(`/admin/contact-messages/${id}`);
+        return response.data;
+    }
+
+    async getUnreadContactCount(): Promise<{ count: number }> {
+        const response = await this.api.get('/admin/contact-messages/unread-count');
         return response.data;
     }
 }

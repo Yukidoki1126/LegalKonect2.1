@@ -5,11 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Client;
+use App\Models\ContactMessage;
 use App\Models\LawFirm;
+use App\Models\User;
 use App\Services\AnalyticsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
+use App\Mail\ContactReplyMail;
 
 class AdminController extends Controller
 {
@@ -196,5 +202,243 @@ class AdminController extends Controller
     public function registrationTrends(): JsonResponse
     {
         return response()->json($this->analyticsService->getRegistrationTrends());
+    }
+
+    /**
+     * Get all users with optional filtering
+     */
+    public function users(Request $request): JsonResponse
+    {
+        $query = User::query();
+
+        // Filter by role
+        if ($request->has('role') && $request->role !== 'all') {
+            $query->where('role', $request->role);
+        }
+
+        // Search by name or email
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $query->with(['client', 'lawFirm']);
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        return response()->json($users);
+    }
+
+    /**
+     * Get a single user
+     */
+    public function showUser($id): JsonResponse
+    {
+        $user = User::with(['client.specializations', 'lawFirm.specializations'])->findOrFail($id);
+
+        return response()->json($user);
+    }
+
+    /**
+     * Update a user's role
+     */
+    public function updateUserRole(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'role' => ['required', Rule::in(['client', 'law_firm', 'admin'])],
+        ]);
+
+        $user = User::findOrFail($id);
+
+        // Prevent admin from changing their own role
+        if ($user->id === $request->user()->id) {
+            return response()->json([
+                'message' => 'You cannot change your own role.',
+            ], 403);
+        }
+
+        $user->update(['role' => $validated['role']]);
+
+        return response()->json([
+            'message' => 'User role updated successfully.',
+            'user' => $user->load(['client', 'lawFirm']),
+        ]);
+    }
+
+    /**
+     * Delete a user
+     */
+    public function deleteUser(Request $request, $id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+
+        // Prevent admin from deleting themselves
+        if ($user->id === $request->user()->id) {
+            return response()->json([
+                'message' => 'You cannot delete your own account.',
+            ], 403);
+        }
+
+        // Delete related records
+        if ($user->client) {
+            $user->client->specializations()->detach();
+            $user->client->delete();
+        }
+
+        if ($user->lawFirm) {
+            $user->lawFirm->specializations()->detach();
+            $user->lawFirm->delete();
+        }
+
+        // Delete user tokens
+        $user->tokens()->delete();
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Reset a user's password
+     */
+    public function resetUserPassword(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'password' => 'required|string|min:8',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        // Revoke all existing tokens
+        $user->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Password reset successfully.',
+        ]);
+    }
+
+    // ===== Contact Messages Management =====
+
+    public function contactMessages(Request $request): JsonResponse
+    {
+        $query = ContactMessage::query()->orderBy('created_at', 'desc');
+
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('subject', 'like', "%{$search}%");
+            });
+        }
+
+        $messages = $query->paginate(15);
+
+        // Also return unread count for badge
+        $unreadCount = ContactMessage::unread()->count();
+
+        return response()->json([
+            'data' => $messages->items(),
+            'current_page' => $messages->currentPage(),
+            'last_page' => $messages->lastPage(),
+            'total' => $messages->total(),
+            'per_page' => $messages->perPage(),
+            'unread_count' => $unreadCount,
+        ]);
+    }
+
+    public function showContactMessage($id): JsonResponse
+    {
+        $message = ContactMessage::findOrFail($id);
+
+        // Auto-mark as read when admin views it
+        if ($message->status === 'unread') {
+            $message->update(['status' => 'read']);
+        }
+
+        return response()->json($message);
+    }
+
+    public function updateContactMessageStatus(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:unread,read,replied',
+            'admin_notes' => 'nullable|string|max:2000',
+        ]);
+
+        $message = ContactMessage::findOrFail($id);
+        $message->update($validated);
+
+        return response()->json([
+            'message' => 'Status updated successfully.',
+            'contact_message' => $message->fresh(),
+        ]);
+    }
+
+    public function deleteContactMessage($id): JsonResponse
+    {
+        $message = ContactMessage::findOrFail($id);
+        $message->delete();
+
+        return response()->json([
+            'message' => 'Message deleted successfully.',
+        ]);
+    }
+
+    public function replyContactMessage(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'reply' => 'required|string|max:5000',
+            'admin_notes' => 'nullable|string|max:2000',
+        ]);
+
+        $message = ContactMessage::findOrFail($id);
+
+        $message->update([
+            'admin_reply' => $validated['reply'],
+            'status' => 'replied',
+            'replied_at' => now(),
+            'admin_notes' => $validated['admin_notes'] ?? $message->admin_notes,
+        ]);
+
+        // Send reply email to the user
+        try {
+            Mail::to($message->email)->send(new ContactReplyMail($message, $validated['reply']));
+            Log::info('Contact reply email sent to: ' . $message->email);
+        } catch (\Exception $e) {
+            Log::error('Failed to send contact reply email: ' . $e->getMessage());
+            // Still mark as replied even if email fails
+            return response()->json([
+                'message' => 'Reply saved but email delivery failed. The user may not receive the email.',
+                'email_sent' => false,
+                'contact_message' => $message->fresh(),
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Reply sent successfully to ' . $message->email,
+            'email_sent' => true,
+            'contact_message' => $message->fresh(),
+        ]);
+    }
+
+    public function unreadContactCount(): JsonResponse
+    {
+        return response()->json([
+            'count' => ContactMessage::unread()->count(),
+        ]);
     }
 }

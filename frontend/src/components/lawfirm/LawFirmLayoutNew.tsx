@@ -22,6 +22,7 @@ import {
     Moon,
     Sun
 } from 'lucide-react';
+import logo from '@/assets/legalkonect.png';
 
 interface LawFirmLayoutProps {
     children: React.ReactNode;
@@ -93,9 +94,7 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                 <div className="flex flex-col h-full">
                     {/* Logo */}
                     <div className="flex items-center gap-2 h-16 px-6 border-b border-border">
-                        <div className="p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg shadow-md shadow-blue-500/20">
-                            <Scale className="h-5 w-5 text-white" />
-                        </div>
+                        <img src={logo} alt="LegalKonect" className="h-10 w-10" />
                         <span className="font-bold text-xl text-foreground">LegalKonect</span>
                     </div>
 
@@ -143,9 +142,7 @@ export default function LawFirmLayoutNew({ children }: LawFirmLayoutProps) {
                         <div className="flex flex-col h-full">
                             <div className="flex items-center justify-between h-16 px-6 border-b border-border">
                                 <div className="flex items-center gap-2">
-                                    <div className="p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg shadow-md shadow-blue-500/20">
-                                        <Scale className="h-5 w-5 text-white" />
-                                    </div>
+                                    <img src={logo} alt="LegalKonect" className="h-10 w-10" />
                                     <span className="font-bold text-xl text-foreground">LegalKonect</span>
                                 </div>
                                 <Button

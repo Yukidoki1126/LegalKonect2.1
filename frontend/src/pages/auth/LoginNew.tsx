@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '@/services/api';
-import { Scale, Mail, Lock, ArrowRight, User, Building2, Shield, Star, CheckCircle, X, Loader2 } from 'lucide-react';
+import { Scale, Mail, Lock, ArrowRight, User, Building2, Shield, Star, CheckCircle, X, Loader2, MessageSquare } from 'lucide-react';
+import logo from '@/assets/legalkonect.png';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -100,9 +101,7 @@ export default function Login() {
                 <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20">
                     {/* Logo */}
                     <div className="flex items-center gap-3 mb-12">
-                        <div className="p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-                            <Scale className="h-8 w-8 text-white" />
-                        </div>
+                        <img src={logo} alt="LegalKonect" className="h-14 w-14" />
                         <span className="text-3xl font-bold text-white">LegalKonect</span>
                     </div>
 
@@ -159,9 +158,7 @@ export default function Login() {
                 <div className="w-full max-w-md">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-                        <div className="p-2 bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl shadow-lg shadow-blue-500/30">
-                            <Scale className="h-6 w-6 text-amber-300" />
-                        </div>
+                        <img src={logo} alt="LegalKonect" className="h-10 w-10" />
                         <span className="text-2xl font-bold text-blue-900 dark:text-white">LegalKonect</span>
                     </div>
 
@@ -297,8 +294,17 @@ export default function Login() {
                         </div>
                     </div>
 
+                    {/* Contact Us */}
+                    <Link
+                        to="/contact"
+                        className="mt-6 w-full flex items-center justify-center gap-2 py-3 border-2 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 font-medium rounded-xl transition-all duration-300 hover:shadow-md text-sm"
+                    >
+                        <MessageSquare className="h-4 w-4" />
+                        Need Help? Contact Us
+                    </Link>
+
                     {/* Footer */}
-                    <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                    <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
                         By signing in, you agree to our{' '}
                         <a href="#" className="text-blue-600 hover:underline">Terms of Service</a>
                         {' '}and{' '}

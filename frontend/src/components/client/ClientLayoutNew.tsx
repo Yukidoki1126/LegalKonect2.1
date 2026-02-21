@@ -20,6 +20,7 @@ import {
     Sun,
     Moon
 } from 'lucide-react';
+import logo from '@/assets/legalkonect.png';
 
 interface ClientLayoutProps {
     children: React.ReactNode;
@@ -49,9 +50,7 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                 <div className="flex h-16 items-center justify-between px-4 lg:px-6">
                     {/* Logo */}
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-lg shadow-md shadow-blue-500/20">
-                            <Scale className="h-5 w-5 text-white" />
-                        </div>
+                        <img src={logo} alt="LegalKonect" className="h-10 w-10" />
                         <span className="font-bold text-xl text-foreground">LegalKonect</span>
                     </div>
 
@@ -190,14 +189,14 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                     <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium truncate">{user?.name}</p>
-                                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{user?.name}</p>
+                                    <p className="text-xs text-slate-600 dark:text-slate-400">{user?.email}</p>
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-start gap-2"
+                                    className="w-full justify-start gap-2 text-slate-700 dark:text-slate-200"
                                     onClick={toggleTheme}
                                 >
                                     {theme === 'dark' ? (
@@ -214,7 +213,7 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-start gap-2"
+                                    className="w-full justify-start gap-2 text-slate-700 dark:text-slate-200"
                                     onClick={() => {
                                         setMobileMenuOpen(false);
                                         navigate('/client/settings');
@@ -225,7 +224,7 @@ export default function ClientLayoutNew({ children }: ClientLayoutProps) {
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-start gap-2"
+                                    className="w-full justify-start gap-2 text-slate-700 dark:text-slate-200"
                                     onClick={() => {
                                         setMobileMenuOpen(false);
                                         handleLogout();

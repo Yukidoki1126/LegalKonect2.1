@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\ClientController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\LawFirm\LawFirmController;
 use App\Http\Controllers\StorageController;
 use App\Models\LawFirm;
@@ -38,6 +39,9 @@ Route::get('/law-firms/{id}', function ($id) {
         ->approved()
         ->findOrFail($id);
 });
+
+// Public contact form
+Route::post('/contact', [ContactController::class, 'store']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -93,5 +97,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/analytics/appointments', [AdminController::class, 'appointmentAnalytics']);
         Route::get('/analytics/distances', [AdminController::class, 'distanceAnalytics']);
         Route::get('/analytics/registrations', [AdminController::class, 'registrationTrends']);
+
+        // User Management
+        Route::get('/users', [AdminController::class, 'users']);
+        Route::get('/users/{id}', [AdminController::class, 'showUser']);
+        Route::put('/users/{id}/role', [AdminController::class, 'updateUserRole']);
+        Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
+        Route::put('/users/{id}/reset-password', [AdminController::class, 'resetUserPassword']);
+
+        // Contact Messages
+        Route::get('/contact-messages', [AdminController::class, 'contactMessages']);
+        Route::get('/contact-messages/unread-count', [AdminController::class, 'unreadContactCount']);
+        Route::get('/contact-messages/{id}', [AdminController::class, 'showContactMessage']);
+        Route::put('/contact-messages/{id}/status', [AdminController::class, 'updateContactMessageStatus']);
+        Route::post('/contact-messages/{id}/reply', [AdminController::class, 'replyContactMessage']);
+        Route::delete('/contact-messages/{id}', [AdminController::class, 'deleteContactMessage']);
     });
 });

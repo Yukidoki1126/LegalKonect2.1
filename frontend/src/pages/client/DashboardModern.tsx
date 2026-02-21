@@ -215,14 +215,14 @@ export default function DashboardModern() {
             const totalPreferences = user.client.specializations.length;
             specializationScore = (matchCount / totalPreferences) * 100 * 0.4;
         } else {
-            // If no preferences set, give partial score based on firm having specializations
+           
             specializationScore = rec.law_firm.specializations && rec.law_firm.specializations.length > 0 ? 20 : 0;
         }
         
         // 2. Distance Score (20% weight) - closer is better
         let distanceScore = 0;
         if (rec.distance_km !== null && rec.distance_km !== undefined) {
-            // Score based on distance brackets
+            
             if (rec.distance_km <= 5) {
                 distanceScore = 20; // Within 5km = full score
             } else if (rec.distance_km <= 10) {
@@ -241,16 +241,16 @@ export default function DashboardModern() {
         // 3. Rating Score (25% weight)
         let ratingScore = 0;
         if (rec.rating_count > 0 && rec.average_rating > 0) {
-            // Convert 5-star rating to percentage (5 stars = 100%)
+           
             ratingScore = (rec.average_rating / 5) * 100 * 0.25;
         }
-        // No reviews = 0 points (transparent scoring)
+       
         
         // 4. Experience Score (15% weight) — 8+ years = full score
         let experienceScore = 0;
         const expRange = rec.law_firm.experience_range;
         if (expRange) {
-            // Score based on experience range — 8+ years is realistically max
+           
             if (expRange.includes('8-10') || expRange.includes('8 - 10')) {
                 experienceScore = 15; // 8-10 years = full score (peak)
             } else if (expRange.includes('10+') || expRange.includes('10 +')) {
@@ -419,11 +419,12 @@ export default function DashboardModern() {
                                     onClick={() => setShowAllFirms(true)}
                                     variant="outline"
                                     size="lg"
-                                    className="gap-2 px-8 py-6 text-base font-medium text-slate-700 dark:text-slate-200 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 dark:border-blue-800 dark:hover:border-blue-700 dark:hover:bg-blue-900/20 transition-all"
+                                    className="gap-1 sm:gap-2 px-3 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-xs sm:text-sm md:text-base font-medium text-slate-700 dark:text-slate-200 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 dark:border-blue-800 dark:hover:border-blue-700 dark:hover:bg-blue-900/20 transition-all"
                                 >
-                                    <Sparkles className="h-5 w-5" />
-                                    View Other Law Firms (60%+ Match)
-                                    <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                                    <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                                    <span className="whitespace-nowrap">View Other Law Firms</span>
+                                    <span className="hidden xs:inline whitespace-nowrap">(60%+ Match)</span>
+                                    <Badge variant="secondary" className="ml-1 sm:ml-2 bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
                                         +{recommendations.length - 3} more
                                     </Badge>
                                 </Button>
@@ -437,9 +438,9 @@ export default function DashboardModern() {
                                     onClick={() => setShowAllFirms(false)}
                                     variant="outline"
                                     size="lg"
-                                    className="gap-2 px-8 py-6 text-base font-medium text-slate-700 dark:text-slate-200 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800/20 transition-all"
+                                    className="gap-1 sm:gap-2 px-3 sm:px-6 md:px-8 py-3 sm:py-4 md:py-6 text-xs sm:text-sm md:text-base font-medium text-slate-700 dark:text-slate-200 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800/20 transition-all"
                                 >
-                                    <ChevronUp className="h-5 w-5" />
+                                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5" />
                                     Show Top 3 Only
                                 </Button>
                             </div>

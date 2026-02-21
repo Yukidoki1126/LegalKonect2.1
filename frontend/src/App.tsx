@@ -24,6 +24,9 @@ import AdminDashboard from './pages/admin/DashboardModern';
 import Verification from './pages/admin/VerificationModern';
 import DtiVerification from './pages/admin/DtiVerification';
 import Analytics from './pages/admin/AnalyticsModern';
+import UserManagement from './pages/admin/UserManagement';
+import ContactMessages from './pages/admin/ContactMessages';
+import ContactUs from './pages/ContactUs';
 import TestShadcn from './pages/TestShadcn';
 
 import './App.css';
@@ -93,6 +96,7 @@ function AppRoutes() {
 
       {/* Public Routes */}
       <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/contact" element={<ContactUs />} />
       <Route
         path="/login"
         element={
@@ -224,6 +228,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <Analytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <UserManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/contact-messages"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <ContactMessages />
           </ProtectedRoute>
         }
       />
