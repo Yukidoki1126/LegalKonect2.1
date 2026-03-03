@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { Appointment } from '@/types';
 import ClientLayoutNew from '@/components/client/ClientLayoutNew';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,15 +22,18 @@ import {
     Clock,
     MapPin,
     Phone,
+    Mail,
     FileText,
     Star,
     CheckCircle,
     XCircle,
     AlertCircle,
-    Building2
+    Building2,
+    Navigation
 } from 'lucide-react';
 
 export default function AppointmentsModern() {
+    const { user } = useAuth();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -227,9 +231,44 @@ export default function AppointmentsModern() {
                                 <div className="flex-1">
                                     <p className="text-sm font-medium text-foreground">Location</p>
                                     <p className="text-sm text-muted-foreground">{apt.law_firm.address}</p>
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            let url: string;
+                                            if (apt.law_firm!.latitude && apt.law_firm!.longitude) {
+                                                url = `https://www.google.com/maps/dir/?api=1&destination=${apt.law_firm!.latitude},${apt.law_firm!.longitude}`;
+                                            } else {
+                                                url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(apt.law_firm!.address!)}`;
+                                            }
+                                            if (user?.client?.latitude && user?.client?.longitude) {
+                                                url += `&origin=${user.client.latitude},${user.client.longitude}`;
+                                            }
+                                            window.open(url, '_blank');
+                                        }}
+                                        className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-primary hover:underline cursor-pointer"
+                                    >
+                                        <Navigation className="h-3.5 w-3.5" />
+                                        Get Directions
+                                    </a>
                                 </div>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* Contact Info */}
+                {apt.law_firm?.email && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                            <Mail className="h-5 w-5 text-primary flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground">Email</p>
+                                <a href={`mailto:${apt.law_firm.email}`} className="text-sm text-primary hover:underline truncate block">
+                                    {apt.law_firm.email}
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 )}
 

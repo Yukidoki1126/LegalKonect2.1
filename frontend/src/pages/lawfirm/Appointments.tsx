@@ -29,6 +29,7 @@ import {
     AlertCircle,
     Bell
 } from 'lucide-react';
+import DateTimePicker from '@/components/ui/date-time-picker';
 
 export default function Appointments() {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -447,7 +448,7 @@ export default function Appointments() {
 
                 {/* Schedule Dialog */}
                 <Dialog open={!!showScheduleModal} onOpenChange={() => setShowScheduleModal(null)}>
-                    <DialogContent>
+                    <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2 text-foreground">
                                 <Calendar className="h-5 w-5" />
@@ -461,13 +462,19 @@ export default function Appointments() {
                         <div className="space-y-4">
                             <div className="grid gap-2">
                                 <Label className="text-foreground">Date & Time</Label>
-                                <Input
-                                    id="schedule-date"
-                                    type="datetime-local"
+                                <DateTimePicker
                                     value={scheduleDate}
-                                    onChange={(e) => setScheduleDate(e.target.value)}
-                                    min={new Date().toISOString().substring(0, 16)}
-                                    className="text-foreground"
+                                    onChange={setScheduleDate}
+                                    minDate={new Date()}
+                                    bookedDates={
+                                        appointments
+                                            .filter(a => a.status === 'confirmed' && a.scheduled_at)
+                                            .map(a => {
+                                                const dateStr = a.scheduled_at.includes('T') ? a.scheduled_at : a.scheduled_at.replace(' ', 'T') + 'Z';
+                                                const d = new Date(dateStr);
+                                                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                                            })
+                                    }
                                 />
                             </div>
 

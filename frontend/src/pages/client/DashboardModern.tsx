@@ -844,59 +844,94 @@ export default function DashboardModern() {
 
                 {/* Booking Dialog */}
                 <Dialog open={!!bookingFirm} onOpenChange={() => { setBookingFirm(null); setBookingNotes(''); setBookingMessage({ type: '', text: '' }); }}>
-                    <DialogContent className="text-foreground">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2 text-foreground">
-                                <Calendar className="h-5 w-5" />
-                                Request Appointment
-                            </DialogTitle>
-                            <DialogDescription className="text-foreground/70">
-                                Book a consultation with {bookingFirm?.firm_name}
-                            </DialogDescription>
-                        </DialogHeader>
+                    <DialogContent className="sm:max-w-lg text-foreground p-0 overflow-hidden border-slate-200 dark:border-slate-700">
+                        {/* Header with gradient accent */}
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                                    <Calendar className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-semibold text-white">Request Appointment</h2>
+                                    <p className="text-sm text-blue-100">
+                                        Book a consultation with {bookingFirm?.firm_name}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
-                        <form onSubmit={handleBookAppointment} className="space-y-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="booking-notes" className="text-foreground">Describe your legal needs (Optional)</Label>
+                        <form onSubmit={handleBookAppointment} className="px-6 pb-6 pt-4 space-y-5">
+                            {/* Firm info summary */}
+                            {bookingFirm && (
+                                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                                        {bookingFirm.firm_name?.charAt(0) || 'L'}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-medium text-sm text-slate-900 dark:text-white truncate">{bookingFirm.firm_name}</p>
+                                        {bookingFirm.specializations && bookingFirm.specializations.length > 0 && (
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{bookingFirm.specializations.map(s => s.name).join(', ')}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Description field */}
+                            <div className="space-y-2">
+                                <Label htmlFor="booking-notes" className="text-sm font-medium text-foreground">
+                                    Describe your legal needs <span className="text-red-500">*</span>
+                                </Label>
                                 <Textarea
                                     id="booking-notes"
                                     value={bookingNotes}
                                     onChange={(e) => setBookingNotes(e.target.value)}
                                     placeholder="Tell the law firm about your legal matter..."
                                     rows={4}
-                                    className="text-foreground"
+                                    className="text-foreground resize-none rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20 transition-colors"
                                 />
+                                <p className={`text-xs transition-colors ${bookingNotes.trim().length > 0 ? 'text-slate-400 dark:text-slate-500' : 'text-amber-500 dark:text-amber-400'}`}>
+                                    {bookingNotes.trim().length > 0
+                                        ? `${bookingNotes.trim().length} character${bookingNotes.trim().length !== 1 ? 's' : ''}`
+                                        : 'A description is required to submit your request'}
+                                </p>
                             </div>
 
                             {bookingMessage.text && (
-                                <div className={`p-3 rounded-lg border ${
+                                <div className={`p-3.5 rounded-xl border ${
                                     bookingMessage.type === 'success'
-                                        ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200'
-                                        : 'bg-destructive/10 border-destructive/20 text-destructive'
+                                        ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950/50 dark:border-green-800 dark:text-green-200'
+                                        : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/50 dark:border-red-800 dark:text-red-200'
                                 }`}>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2.5">
                                         {bookingMessage.type === 'success' ? (
-                                            <CheckCircle className="h-4 w-4" />
+                                            <CheckCircle className="h-4 w-4 shrink-0" />
                                         ) : (
-                                            <AlertCircle className="h-4 w-4" />
+                                            <AlertCircle className="h-4 w-4 shrink-0" />
                                         )}
-                                        <p className="text-sm">{bookingMessage.text}</p>
+                                        <p className="text-sm font-medium">{bookingMessage.text}</p>
                                     </div>
                                 </div>
                             )}
 
-                            <DialogFooter>
+                            {/* Actions */}
+                            <div className="flex gap-3 justify-end pt-2 border-t border-slate-200 dark:border-slate-700">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => { setBookingFirm(null); setBookingNotes(''); setBookingMessage({ type: '', text: '' }); }}
+                                    className="px-5 rounded-xl"
                                 >
                                     Cancel
                                 </Button>
-                                <Button type="submit" disabled={bookingLoading}>
+                                <Button
+                                    type="submit"
+                                    disabled={bookingLoading || !bookingNotes.trim()}
+                                    className="px-5 gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all"
+                                >
+                                    <Calendar className="h-4 w-4" />
                                     {bookingLoading ? 'Requesting...' : 'Request Appointment'}
                                 </Button>
-                            </DialogFooter>
+                            </div>
                         </form>
                     </DialogContent>
                 </Dialog>
