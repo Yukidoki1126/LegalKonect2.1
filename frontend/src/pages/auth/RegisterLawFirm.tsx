@@ -15,6 +15,12 @@ export default function RegisterLawFirm() {
         firm_name: '',
         license_number: '',
         description: '',
+        experience_range: '',
+        lawyers: [] as string[],
+        contact_person_name: '',
+        contact_person_role: '',
+        contact_person_phone: '',
+        contact_person_email: '',
         phone: '',
         firm_email: '',
         address: '',
@@ -87,7 +93,8 @@ export default function RegisterLawFirm() {
         <div className="auth-container">
             <div className="auth-card register-card law-firm-register">
                 <div className="auth-header">
-                    <h1>🏛️ Register Law Firm</h1>
+                    <div className="brand-icon" style={{fontSize: '2.5rem', marginBottom: '0.5rem'}}>🏛️</div>
+                    <h1>Register Law Firm</h1>
                     <p>Create your firm profile to connect with clients</p>
                     <div className="step-indicator">
                         <div className={`step ${step >= 1 ? 'active' : ''}`}>1<span>Account</span></div>
@@ -106,7 +113,7 @@ export default function RegisterLawFirm() {
                             <h3>Account Information</h3>
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label htmlFor="name">Contact Person Name</label>
+                                    <label htmlFor="name">Your Full Name</label>
                                     <input
                                         type="text"
                                         id="name"
@@ -241,14 +248,64 @@ export default function RegisterLawFirm() {
                                     />
                                 </div>
                             </div>
+
+                            <h4 style={{marginTop: '1.5rem', marginBottom: '0.75rem'}}>Contact Person (Optional)</h4>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label htmlFor="contact_person_name">Contact Person Name</label>
+                                    <input
+                                        type="text"
+                                        id="contact_person_name"
+                                        name="contact_person_name"
+                                        value={formData.contact_person_name}
+                                        onChange={handleChange}
+                                        placeholder="Secretary or staff name"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="contact_person_role">Role/Position</label>
+                                    <input
+                                        type="text"
+                                        id="contact_person_role"
+                                        name="contact_person_role"
+                                        value={formData.contact_person_role}
+                                        onChange={handleChange}
+                                        placeholder="e.g., Secretary, Legal Assistant"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label htmlFor="contact_person_phone">Contact Phone</label>
+                                    <input
+                                        type="tel"
+                                        id="contact_person_phone"
+                                        name="contact_person_phone"
+                                        value={formData.contact_person_phone}
+                                        onChange={handleChange}
+                                        placeholder="Contact person phone"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="contact_person_email">Contact Email</label>
+                                    <input
+                                        type="email"
+                                        id="contact_person_email"
+                                        name="contact_person_email"
+                                        value={formData.contact_person_email}
+                                        onChange={handleChange}
+                                        placeholder="Contact person email"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {step === 3 && (
                         <div className="form-section">
                             <div className="form-group">
-                                <label>Legal Specializations Offered *</label>
-                                <p className="form-help">Select the areas of law your firm practices</p>
+                                <label>Legal Specializations Offered * <span className="form-help" style={{fontWeight: 'normal'}}>(Select practice areas)</span></label>
                                 <div className="specialization-grid">
                                     {specializations.map((spec) => (
                                         <label key={spec.id} className="specialization-checkbox">

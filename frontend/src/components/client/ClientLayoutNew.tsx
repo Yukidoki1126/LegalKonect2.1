@@ -1,0 +1,251 @@
+import React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import FloatingFAQ from '@/components/client/FloatingFAQ';
+import {
+    LayoutDashboard,
+    Calendar,
+    Settings,
+    LogOut,
+    Scale,
+    Menu,
+    X,
+    Search,
+    Bell,
+    User,
+    ChevronDown,
+    Sun,
+    Moon
+} from 'lucide-react';
+import logo from '@/assets/legalkonect.png';
+
+interface ClientLayoutProps {
+    children: React.ReactNode;
+}
+
+export default function ClientLayoutNew({ children }: ClientLayoutProps) {
+    const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
+    const navigate = useNavigate();
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login');
+    };
+
+    const navigation = [
+        { name: 'Find Lawfirms', href: '/client/dashboard', icon: LayoutDashboard },
+        { name: 'Appointments', href: '/client/appointments', icon: Calendar }
+    ];
+
+    return (
+        <div className="min-h-screen bg-background">
+            {/* Header */}
+            <header className="sticky top-0 z-50 bg-card border-b border-border">
+                <div className="flex h-16 items-center justify-between px-4 lg:px-6">
+                    {/* Logo */}
+                    <div className="flex items-center gap-2">
+                        <img src={logo} alt="LegalKonect" className="h-10 w-10" />
+                        <span className="font-bold text-xl text-foreground">LegalKonect</span>
+                    </div>
+
+                    {/* Desktop Navigation - Centered */}
+                    <div className="absolute left-1/2 transform -translate-x-1/2">
+                        <nav className="hidden md:flex items-center gap-1">
+                            {navigation.map((item) => (
+                                <NavLink
+                                    key={item.name}
+                                    to={item.href}
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                                            ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md shadow-blue-500/20'
+                                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                        }`
+                                    }
+                                >
+                                    <item.icon className="h-4 w-4" />
+                                    {item.name}
+                                </NavLink>
+                            ))}
+                        </nav>
+                    </div>
+
+                    {/* Right side */}
+                    <div className="flex items-center gap-2">
+                        {/* Theme Toggle */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={toggleTheme}
+                            className="hidden md:flex text-foreground"
+                        >
+                            {theme === 'dark' ? (
+                                <Sun className="h-5 w-5" />
+                            ) : (
+                                <Moon className="h-5 w-5" />
+                            )}
+                        </Button>
+
+                        {/* User Menu - Desktop */}
+                        <div className="hidden md:block relative">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="gap-2"
+                                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                            >
+                                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                                    <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div className="text-left hidden lg:block">
+                                    <p className="text-sm font-medium text-foreground">{user?.name}</p>
+                                    <p className="text-xs text-muted-foreground">Client</p>
+                                </div>
+                                <ChevronDown className="h-4 w-4 text-foreground" />
+                            </Button>
+
+                            {/* Dropdown Menu */}
+                            {userMenuOpen && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setUserMenuOpen(false)}
+                                    />
+                                    <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50">
+                                        <div className="p-3 border-b border-border">
+                                            <p className="text-sm font-medium text-foreground">{user?.name}</p>
+                                            <p className="text-xs text-muted-foreground">{user?.email}</p>
+                                        </div>
+                                        <div className="p-2">
+                                            <Button
+                                                variant="ghost"
+                                                className="w-full justify-start gap-2 text-foreground"
+                                                onClick={() => {
+                                                    setUserMenuOpen(false);
+                                                    navigate('/client/settings');
+                                                }}
+                                            >
+                                                <Settings className="h-4 w-4" />
+                                                Settings
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                className="w-full justify-start gap-2 text-foreground"
+                                                onClick={handleLogout}
+                                            >
+                                                <LogOut className="h-4 w-4" />
+                                                Logout
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Mobile Menu Button */}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="md:hidden text-foreground"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
+                            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Mobile Navigation */}
+                {mobileMenuOpen && (
+                    <div className="md:hidden border-t border-border bg-card">
+                        {/* Navigation Links */}
+                        <nav className="p-2">
+                            {navigation.map((item) => (
+                                <NavLink
+                                    key={item.name}
+                                    to={item.href}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive
+                                            ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md'
+                                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                        }`
+                                    }
+                                >
+                                    <item.icon className="h-5 w-5" />
+                                    {item.name}
+                                </NavLink>
+                            ))}
+                        </nav>
+
+                        {/* User Info - Mobile */}
+                        <div className="p-4 border-t border-border">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{user?.name}</p>
+                                    <p className="text-xs text-slate-600 dark:text-slate-400">{user?.email}</p>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start gap-2 text-slate-700 dark:text-slate-200"
+                                    onClick={toggleTheme}
+                                >
+                                    {theme === 'dark' ? (
+                                        <>
+                                            <Sun className="h-4 w-4" />
+                                            Light Mode
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Moon className="h-4 w-4" />
+                                            Dark Mode
+                                        </>
+                                    )}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start gap-2 text-slate-700 dark:text-slate-200"
+                                    onClick={() => {
+                                        setMobileMenuOpen(false);
+                                        navigate('/client/settings');
+                                    }}
+                                >
+                                    <Settings className="h-4 w-4" />
+                                    Settings
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-start gap-2 text-slate-700 dark:text-slate-200"
+                                    onClick={() => {
+                                        setMobileMenuOpen(false);
+                                        handleLogout();
+                                    }}
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                    Logout
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </header>
+
+            {/* Main content */}
+            <main className="flex-1 p-4 lg:p-6 max-w-7xl mx-auto">
+                {children}
+            </main>
+
+            {/* Floating FAQ Button */}
+            <FloatingFAQ />
+        </div>
+    );
+}

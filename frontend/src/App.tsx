@@ -1,21 +1,33 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { NetworkStatus, useNetworkStatus } from './components/common/NetworkStatus';
+import { LoadingScreen } from './components/common/LoadingScreen';
 
 // Auth Pages
-import Login from './pages/auth/Login';
+import Login from './pages/auth/LoginNew';
 import RegisterClient from './pages/auth/RegisterClient';
 import RegisterLawFirm from './pages/auth/RegisterLawFirm';
+import ResetPassword from './pages/auth/ResetPassword';
 
 // Dashboard Pages
-import ClientDashboard from './pages/client/Dashboard';
-import LawFirmDashboard from './pages/lawfirm/Dashboard';
+import ClientDashboard from './pages/client/DashboardModern';
+import ClientSettings from './pages/client/SettingsModern';
+import ClientAppointments from './pages/client/AppointmentsModern';
+import LawFirmDashboard from './pages/lawfirm/DashboardModern';
+import LawFirmAppointments from './pages/lawfirm/Appointments';
 import LawFirmCalendar from './pages/lawfirm/Calendar';
 import LawFirmReviews from './pages/lawfirm/Reviews';
 import LawFirmSettings from './pages/lawfirm/Settings';
-import AdminDashboard from './pages/admin/Dashboard';
-import Verification from './pages/admin/Verification';
-import Analytics from './pages/admin/Analytics';
+import AdminDashboard from './pages/admin/DashboardModern';
+import Verification from './pages/admin/VerificationModern';
+import DtiVerification from './pages/admin/DtiVerification';
+import Analytics from './pages/admin/AnalyticsModern';
+import UserManagement from './pages/admin/UserManagement';
+import ContactMessages from './pages/admin/ContactMessages';
+import ContactUs from './pages/ContactUs';
+import TestShadcn from './pages/TestShadcn';
 
 import './App.css';
 
@@ -30,7 +42,7 @@ function ProtectedRoute({
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) {
-    return <div className="loading-screen">Loading...</div>;
+    return <LoadingScreen message="Authenticating..." timeout={8000} />;
   }
 
   if (!isAuthenticated) {
@@ -59,7 +71,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) {
-    return <div className="loading-screen">Loading...</div>;
+    return <LoadingScreen message="Loading..." timeout={8000} />;
   }
 
   if (isAuthenticated) {
@@ -79,13 +91,25 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
+      {/* Test Route - Remove after testing */}
+      <Route path="/test-shadcn" element={<TestShadcn />} />
+
       {/* Public Routes */}
       <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/contact" element={<ContactUs />} />
       <Route
         path="/login"
         element={
           <PublicRoute>
             <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <PublicRoute>
+            <ResetPassword />
           </PublicRoute>
         }
       />
@@ -115,6 +139,22 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/client/settings"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <ClientSettings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/appointments"
+        element={
+          <ProtectedRoute allowedRoles={['client']}>
+            <ClientAppointments />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Law Firm Routes */}
       <Route
@@ -122,6 +162,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['law_firm']}>
             <LawFirmDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/law-firm/appointments"
+        element={
+          <ProtectedRoute allowedRoles={['law_firm']}>
+            <LawFirmAppointments />
           </ProtectedRoute>
         }
       />
@@ -168,10 +216,34 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/admin/dti-verification"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DtiVerification />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/analytics"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <Analytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <UserManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/contact-messages"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <ContactMessages />
           </ProtectedRoute>
         }
       />
@@ -182,13 +254,28 @@ function AppRoutes() {
   );
 }
 
+// Network Status Wrapper
+function NetworkStatusWrapper({ children }: { children: React.ReactNode }) {
+  const networkStatus = useNetworkStatus();
+  return (
+    <>
+      {children}
+      <NetworkStatus status={networkStatus} />
+    </>
+  );
+}
+
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <NetworkStatusWrapper>
+            <AppRoutes />
+          </NetworkStatusWrapper>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\LawFirm;
 
+use App\Events\AppointmentStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LawFirmController extends Controller
 {
@@ -15,7 +17,7 @@ class LawFirmController extends Controller
      */
     public function profile(Request $request): JsonResponse
     {
-        $lawFirm = $request->user()->lawFirm->load('specializations');
+        $lawFirm = $request->user()->lawFirm->load(['specializations', 'ratings.client.user']);
 
         return response()->json($lawFirm);
     }
@@ -28,6 +30,13 @@ class LawFirmController extends Controller
         $validated = $request->validate([
             'firm_name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'experience_range' => 'nullable|string',
+            'lawyers' => 'nullable|array',
+            'lawyers.*' => 'string|max:255',
+            'contact_person_name' => 'nullable|string|max:255',
+            'contact_person_role' => 'nullable|string|max:255',
+            'contact_person_phone' => 'nullable|string|max:20',
+            'contact_person_email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'license_number' => 'nullable|string|max:100',
@@ -40,6 +49,8 @@ class LawFirmController extends Controller
         $lawFirm->update([
             'firm_name' => $validated['firm_name'] ?? $lawFirm->firm_name,
             'description' => $validated['description'] ?? $lawFirm->description,
+            'experience_range' => $validated['experience_range'] ?? $lawFirm->experience_range,
+            'lawyers' => $validated['lawyers'] ?? $lawFirm->lawyers,
             'phone' => $validated['phone'] ?? $lawFirm->phone,
             'email' => $validated['email'] ?? $lawFirm->email,
             'license_number' => $validated['license_number'] ?? $lawFirm->license_number,
@@ -137,7 +148,7 @@ class LawFirmController extends Controller
     public function updateAppointment(Request $request, $id): JsonResponse
     {
         $validated = $request->validate([
-            'scheduled_at' => 'nullable|date|after:now',
+            'scheduled_at' => 'nullable|date',
             'duration_minutes' => 'nullable|integer|min:15|max:480',
             'status' => 'nullable|in:pending,confirmed,cancelled,completed',
             'notes' => 'nullable|string|max:1000',
@@ -148,7 +159,18 @@ class LawFirmController extends Controller
             ->appointments()
             ->findOrFail($id);
 
+        // Restriction: Only allow marking as completed on or after the scheduled time
+        if (isset($validated['status']) && $validated['status'] === 'completed') {
+            if ($appointment->scheduled_at->isFuture()) {
+                return response()->json([
+                    'message' => 'Cannot mark appointment as completed before its scheduled date and time.',
+                ], 422);
+            }
+        }
+
         $appointment->update($validated);
+
+        broadcast(new AppointmentStatusUpdated($appointment->load(['client.user', 'lawFirm.user', 'specialization'])))->toOthers();
 
         return response()->json([
             'message' => 'Appointment updated successfully',
@@ -173,6 +195,8 @@ class LawFirmController extends Controller
             'status' => 'cancelled',
             'cancellation_reason' => $validated['cancellation_reason'] ?? null,
         ]);
+
+        broadcast(new AppointmentStatusUpdated($appointment->load(['client.user', 'lawFirm.user', 'specialization'])))->toOthers();
 
         return response()->json([
             'message' => 'Appointment cancelled successfully',
@@ -238,5 +262,111 @@ class LawFirmController extends Controller
             'cancelled' => '#ef4444',   // Red
             default => '#6b7280',       // Gray
         };
+    }
+
+    /**
+     * Upload profile image
+     */
+    public function uploadProfileImage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120', // 5MB max
+        ]);
+
+        $lawFirm = $request->user()->lawFirm;
+
+        // Delete old image if exists
+        if ($lawFirm->profile_image) {
+            Storage::disk('r2')->delete($lawFirm->profile_image);
+        }
+
+        // Generate unique filename
+        $filename = 'law-firms/' . $lawFirm->id . '/' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+
+        // Upload to R2
+        Storage::disk('r2')->put($filename, file_get_contents($request->file('image')), 'public');
+
+        // Update database
+        $lawFirm->update(['profile_image' => $filename]);
+
+        return response()->json([
+            'message' => 'Profile image uploaded successfully',
+            'profile_image_url' => $lawFirm->profile_image_url,
+        ]);
+    }
+
+    /**
+     * Delete profile image
+     */
+    public function deleteProfileImage(Request $request): JsonResponse
+    {
+        $lawFirm = $request->user()->lawFirm;
+
+        if ($lawFirm->profile_image) {
+            Storage::disk('r2')->delete($lawFirm->profile_image);
+            $lawFirm->update(['profile_image' => null]);
+        }
+
+        return response()->json([
+            'message' => 'Profile image deleted successfully',
+        ]);
+    }
+
+    /**
+     * Upload gallery image
+     */
+    public function uploadGalleryImage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120', // 5MB max
+        ]);
+
+        $lawFirm = $request->user()->lawFirm;
+
+        // Check if already has 10 images
+        $currentImages = $lawFirm->gallery_images ?? [];
+        if (count($currentImages) >= 10) {
+            return response()->json(['message' => 'Maximum of 10 gallery images allowed'], 400);
+        }
+
+        // Generate unique filename
+        $filename = 'law-firms/' . $lawFirm->id . '/gallery/' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+
+        // Upload to R2
+        Storage::disk('r2')->put($filename, file_get_contents($request->file('image')), 'public');
+
+        // Update database - add to array
+        $currentImages[] = $filename;
+        $lawFirm->update(['gallery_images' => $currentImages]);
+
+        return response()->json([
+            'message' => 'Gallery image uploaded successfully',
+            'gallery_images_urls' => $lawFirm->gallery_images_urls,
+        ]);
+    }
+
+    /**
+     * Delete gallery image
+     */
+    public function deleteGalleryImage(Request $request, int $index): JsonResponse
+    {
+        $lawFirm = $request->user()->lawFirm;
+        $currentImages = $lawFirm->gallery_images ?? [];
+
+        if (!isset($currentImages[$index])) {
+            return response()->json(['message' => 'Image not found'], 404);
+        }
+
+        // Delete from R2
+        Storage::disk('r2')->delete($currentImages[$index]);
+
+        // Remove from array
+        array_splice($currentImages, $index, 1);
+        $lawFirm->update(['gallery_images' => array_values($currentImages)]);
+
+        return response()->json([
+            'message' => 'Gallery image deleted successfully',
+            'gallery_images_urls' => $lawFirm->gallery_images_urls,
+        ]);
     }
 }

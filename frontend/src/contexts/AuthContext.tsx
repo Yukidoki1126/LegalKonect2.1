@@ -9,6 +9,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     setUser: (user: User) => void;
+    refreshUser: () => Promise<void>;
     isAuthenticated: boolean;
     isClient: boolean;
     isLawFirm: boolean;
@@ -27,11 +28,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const savedToken = localStorage.getItem('token');
             if (savedToken) {
                 try {
-                    const userData = await api.getUser();
-                    setUser(userData);
-                } catch {
+                    // Add additional timeout wrapper (10 seconds max for initial auth)
+                    const timeoutPromise = new Promise<never>((_, reject) => {
+                        setTimeout(() => reject(new Error('Authentication timeout')), 10000);
+                    });
+                    
+                    const userData = await Promise.race([
+                        api.getUser(),
+                        timeoutPromise
+                    ]);
+                    
+                    setUser(userData as User);
+                } catch (error) {
+                    console.error('Auth initialization failed:', error);
+                    // Clear invalid/expired token
                     localStorage.removeItem('token');
                     setToken(null);
+                    setUser(null);
                 }
             }
             setLoading(false);
@@ -48,14 +61,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
-        try {
-            await api.logout();
-        } catch {
-            // Ignore errors on logout
-        }
+        // Clear local state immediately
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
+        
+        // Try to notify backend (don't wait for response)
+        try {
+            // Use a short timeout and don't wait for completion
+            api.logout().catch(() => {
+                // Silently ignore backend errors
+            });
+        } catch {
+            // Ignore any errors
+        }
+    };
+
+    const refreshUser = async () => {
+        if (!token) return;
+        try {
+            const userData = await api.getUser();
+            setUser(userData);
+        } catch (error) {
+            console.error('Failed to refresh user data:', error);
+        }
     };
 
     const value: AuthContextType = {
@@ -65,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         setUser,
+        refreshUser,
         isAuthenticated: !!user,
         isClient: user?.role === 'client',
         isLawFirm: user?.role === 'law_firm',

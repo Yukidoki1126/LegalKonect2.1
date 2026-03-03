@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Events\AppointmentCreated;
+use App\Events\RatingSubmitted;
 use App\Http\Controllers\Controller;
+use App\Models\Appointment;
 use App\Models\LawFirm;
 use App\Models\Rating;
 use App\Services\RecommendationService;
@@ -23,7 +26,7 @@ class ClientController extends Controller
      */
     public function profile(Request $request): JsonResponse
     {
-        $client = $request->user()->client->load('specializations');
+        $client = $request->user()->client->load(['specializations', 'user']);
 
         return response()->json($client);
     }
@@ -34,16 +37,30 @@ class ClientController extends Controller
     public function updateProfile(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255|unique:users,email,' . $request->user()->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
             'specialization_ids' => 'nullable|array',
             'specialization_ids.*' => 'exists:specializations,id',
+            'preferred_min_rating' => 'nullable|numeric|min:0|max:5',
+            'preferred_max_distance' => 'nullable|integer|min:1|max:500',
+            'preferred_experience' => 'nullable|string|in:any,1-3,3-5,5-8,8-10,10+',
         ]);
 
-        $client = $request->user()->client;
+        $user = $request->user();
+        $user->update([
+            'name' => $validated['name'] ?? $user->name,
+            'email' => $validated['email'] ?? $user->email,
+        ]);
+
+        $client = $user->client;
         $client->update([
             'phone' => $validated['phone'] ?? $client->phone,
             'address' => $validated['address'] ?? $client->address,
+            'preferred_min_rating' => array_key_exists('preferred_min_rating', $validated) ? $validated['preferred_min_rating'] : $client->preferred_min_rating,
+            'preferred_max_distance' => array_key_exists('preferred_max_distance', $validated) ? $validated['preferred_max_distance'] : $client->preferred_max_distance,
+            'preferred_experience' => array_key_exists('preferred_experience', $validated) ? $validated['preferred_experience'] : $client->preferred_experience,
         ]);
 
         if (isset($validated['specialization_ids'])) {
@@ -52,7 +69,7 @@ class ClientController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'client' => $client->load('specializations'),
+            'client' => $client->load(['specializations', 'user']),
         ]);
     }
 
@@ -94,7 +111,7 @@ class ClientController extends Controller
     {
         $appointments = $request->user()->client
             ->appointments()
-            ->with(['lawFirm.user', 'specialization'])
+            ->with(['lawFirm.user', 'specialization', 'rating'])
             ->orderBy('scheduled_at', 'desc')
             ->get();
 
@@ -108,7 +125,7 @@ class ClientController extends Controller
     {
         $appointment = $request->user()->client
             ->appointments()
-            ->with(['lawFirm.user', 'specialization'])
+            ->with(['lawFirm.user', 'specialization', 'rating'])
             ->findOrFail($id);
 
         return response()->json($appointment);
@@ -149,6 +166,8 @@ class ClientController extends Controller
             'review' => $validated['review'] ?? null,
         ]);
 
+        broadcast(new RatingSubmitted($rating->load('client.user')))->toOthers();
+
         return response()->json([
             'message' => 'Rating submitted successfully',
             'rating' => $rating,
@@ -183,5 +202,40 @@ class ClientController extends Controller
             'rating_count' => $lawFirm->ratings->count(),
             'distance_km' => $distance,
         ]);
+    }
+
+    /**
+     * Create an appointment (client initiated)
+     */
+    public function createAppointment(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'law_firm_id' => 'required|exists:law_firms,id',
+            'specialization_id' => 'nullable|exists:specializations,id',
+            'scheduled_at' => 'nullable|date',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $client = $request->user()->client;
+
+        // Check if law firm is approved
+        $lawFirm = LawFirm::approved()->findOrFail($validated['law_firm_id']);
+
+        $appointment = Appointment::create([
+            'client_id' => $client->id,
+            'law_firm_id' => $lawFirm->id,
+            'specialization_id' => $validated['specialization_id'] ?? null,
+            'scheduled_at' => $validated['scheduled_at'] ?? now(),
+            'duration_minutes' => 60, // Default duration
+            'status' => 'pending',
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        broadcast(new AppointmentCreated($appointment->load(['lawFirm.user', 'specialization', 'client.user'])))->toOthers();
+
+        return response()->json([
+            'message' => 'Appointment request sent successfully',
+            'appointment' => $appointment->load(['lawFirm.user', 'specialization']),
+        ], 201);
     }
 }

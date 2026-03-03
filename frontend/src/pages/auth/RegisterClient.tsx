@@ -69,13 +69,15 @@ export default function RegisterClient() {
         <div className="auth-container">
             <div className="auth-card register-card">
                 <div className="auth-header">
-                    <h1>⚖️ Register as Client</h1>
+                    <div className="brand-icon" style={{fontSize: '2.5rem', marginBottom: '0.5rem'}}>⚖️</div>
+                    <h1>Register as Client</h1>
                     <p>Create your account to find legal assistance</p>
                 </div>
 
                 {error && <div className="error-message">{error}</div>}
 
                 <form onSubmit={handleSubmit} className="auth-form">
+                    <h3>Account Information</h3>
                     <div className="form-row">
                         <div className="form-group">
                             <label htmlFor="name">Full Name</label>
@@ -133,35 +135,37 @@ export default function RegisterClient() {
                         </div>
                     </div>
 
+                    <h3>Contact Details</h3>
                     <div className="form-row">
                         <div className="form-group">
-                            <label htmlFor="phone">Phone Number (Optional)</label>
+                            <label htmlFor="phone">Phone Number</label>
                             <input
                                 type="tel"
                                 id="phone"
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleChange}
+                                required
                                 placeholder="+63 XXX XXX XXXX"
                             />
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="address">Address (Optional)</label>
+                            <label htmlFor="address">Address</label>
                             <input
                                 type="text"
                                 id="address"
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
+                                required
                                 placeholder="Your address"
                             />
                         </div>
                     </div>
 
                     <div className="form-group">
-                        <label>Legal Specializations Needed</label>
-                        <p className="form-help">Select the types of legal help you're looking for</p>
+                        <label>Legal Specializations Needed <span className="form-help" style={{fontWeight: 'normal'}}>(Optional - Select areas you need help with)</span></label>
                         <div className="specialization-grid">
                             {specializations.map((spec) => (
                                 <label key={spec.id} className="specialization-checkbox">

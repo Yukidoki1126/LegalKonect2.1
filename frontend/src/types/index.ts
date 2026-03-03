@@ -17,6 +17,9 @@ export interface Client {
   longitude: number | null;
   address: string | null;
   phone: string | null;
+  preferred_min_rating: number | null;
+  preferred_max_distance: number | null;
+  preferred_experience: string | null;
   created_at: string;
   updated_at: string;
   specializations?: Specialization[];
@@ -29,6 +32,12 @@ export interface LawFirm {
   firm_name: string;
   license_number: string | null;
   description: string | null;
+  experience_range: string | null;
+  lawyers: string[];
+  contact_person_name: string | null;
+  contact_person_role: string | null;
+  contact_person_phone: string | null;
+  contact_person_email: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;
@@ -37,6 +46,10 @@ export interface LawFirm {
   verification_status: 'pending' | 'approved' | 'rejected';
   rejection_reason: string | null;
   verified_at: string | null;
+  profile_image: string | null;
+  profile_image_url: string | null;
+  gallery_images?: string[];
+  gallery_images_urls?: string[];
   created_at: string;
   updated_at: string;
   specializations?: Specialization[];
@@ -69,6 +82,7 @@ export interface Appointment {
   client?: Client;
   law_firm?: LawFirm;
   specialization?: Specialization;
+  rating?: Rating;
 }
 
 export interface Rating {
@@ -106,6 +120,7 @@ export interface CalendarEvent {
   end: string;
   status: string;
   color: string;
+  textColor?: string;
   extendedProps: {
     appointment: Appointment;
   };
